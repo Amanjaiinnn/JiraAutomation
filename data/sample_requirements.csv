@@ -1,0 +1,4 @@
+
+Type,Requirement
+US,User login
+BUG,Login fails on retry
