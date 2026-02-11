@@ -1,18 +1,4 @@
 
-# import pandas as pd
-# from PyPDF2 import PdfReader
-
-# def load_requirements(file):
-#     name = file.name.lower()
-#     if name.endswith(".txt"):
-#         return file.read().decode()
-#     if name.endswith(".pdf"):
-#         reader = PdfReader(file)
-#         return "\n".join(p.extract_text() for p in reader.pages if p.extract_text())
-#     if name.endswith(".csv"):
-#         df = pd.read_csv(file)
-#         return "\n".join(df.astype(str).agg(" | ".join, axis=1))
-#     raise ValueError("Unsupported file")
 
 import pandas as pd
 from PyPDF2 import PdfReader

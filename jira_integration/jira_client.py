@@ -1,9 +1,4 @@
 
-# from jira import JIRA
-# from app.config import JIRA_URL, JIRA_EMAIL, JIRA_API_TOKEN
-
-# def get_jira():
-#     return JIRA(server=JIRA_URL, basic_auth=(JIRA_EMAIL, JIRA_API_TOKEN))
 
 import os
 from jira import JIRA

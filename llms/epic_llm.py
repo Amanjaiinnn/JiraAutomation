@@ -1,180 +1,76 @@
-# import os
-# from groq import Groq
 
 
-# def get_groq_client():
-#     api_key = os.getenv("GROQ_API_KEY")
-#     if not api_key:
-#         raise RuntimeError("GROQ_API_KEY is not set")
-#     return Groq(api_key=api_key)
 
-
-# def generate_epics(requirements_text):
-#     client = get_groq_client()
-
-#     prompt = f"""
-# You are a Senior Product Manager.
-
-# From the requirements below, generate clear, high-level Epics.
-# Each epic should represent a major business capability.
-
-# Requirements:
-# {requirements_text}
-
-# Return output as JSON list:
-# [
-#   {{
-#     "epic_name": "...",
-#     "description": "..."
-#   }}
-# ]
-# """
-
-#     response = client.chat.completions.create(
-#         model="llama-3.3-70b-versatile",
-#         messages=[{"role": "user", "content": prompt}],
-#         temperature=0.3
-#     )
-
-#     return response.choices[0].message.content
-
-
-# def regenerate_epic(requirements_text, epic_name):
-#     client = get_groq_client()   # ✅ THIS WAS MISSING
-
-#     prompt = f"""
-# You are a Senior Product Manager.
-
-# Improve and refine the following Epic.
-# Make it more detailed, business-aligned, and implementation-ready.
-
-# Epic Name:
-# {epic_name}
-
-# Requirements Context:
-# {requirements_text}
-
-# Return output as JSON:
-# {{
-#   "epic_name": "...",
-#   "description": "..."
-# }}
-# """
-
-#     response = client.chat.completions.create(
-#         model="llama-3.3-70b-versatile",
-#         messages=[{"role": "user", "content": prompt}],
-#         temperature=0.3
-#     )
-
-#     return response.choices[0].message.content
-
-
-# llms/epic_llm.py
-
-# llms/epic_llm.py
-
-import os
+import hashlib
 import json
-from groq import Groq
-from dotenv import load_dotenv
+import os
+import time
+from functools import lru_cache
+from typing import Dict, List
 
-from prompts.epic_prompts import generate_epics_prompt
-from llms.parser import parse_llm_json
-# =========================
-# Groq Client (safe init)
-# =========================
+from dotenv import load_dotenv
+from groq import Groq
+
+from llms.parser import ensure_epic_schema, parse_llm_json
+from prompts.epic_prompts import generate_epics_prompt, regenerate_epic_prompt
+
+
 load_dotenv()
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-if not GROQ_API_KEY:
-    raise RuntimeError("GROQ_API_KEY not set")
 
-client = Groq(api_key=GROQ_API_KEY)
+def _get_client() -> Groq:
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise RuntimeError("GROQ_API_KEY not set")
+    return Groq(api_key=api_key)
 
 
-# =========================
-# MAP STEP: One chunk → epics
-# =========================
-def generate_epics_from_chunk(chunk: dict) -> list:
-    """
-    chunk = {
-        "chunk_id": "C3",
-        "text": "REQ-12 ... REQ-18 ..."
+def _chat_with_backoff(prompt: str, model: str, max_tokens: int) -> str:
+    client = _get_client()
+    sleep_seconds = 1
+    for attempt in range(4):
+        try:
+            kwargs = {
+                "model": model,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.2,
+                "max_tokens": max_tokens,
+            }
+            if model.endswith("8b-instant"):
+                kwargs["response_format"] = {"type": "json_object"}
+            response = client.chat.completions.create(**kwargs)
+            return response.choices[0].message.content.strip()
+        except Exception:
+            if attempt == 3:
+                raise
+            time.sleep(sleep_seconds)
+            sleep_seconds *= 2
+    raise RuntimeError("LLM call failed")
+
+
+@lru_cache(maxsize=512)
+def _cached_generate(chunk_id: str, text_hash: str, chunk_text: str) -> tuple:
+    prompt = generate_epics_prompt(chunk_id=chunk_id, chunk_text=chunk_text)
+    raw = _chat_with_backoff(prompt, model="llama-3.1-8b-instant", max_tokens=650)
+    parsed = ensure_epic_schema(parse_llm_json(raw))
+    return tuple(json.dumps(epic, sort_keys=True) for epic in parsed)
+
+
+def generate_epics_from_chunk(chunk: Dict[str, str]) -> List[Dict]:
+    text_hash = hashlib.sha1(chunk["text"].encode("utf-8")).hexdigest()[:12]
+    rows = _cached_generate(chunk["chunk_id"], text_hash, chunk["text"])
+    return [json.loads(x) for x in rows]
+
+
+def regenerate_epic(chunk_text: str, epic_name: str) -> Dict:
+    prompt = regenerate_epic_prompt(chunk_text=chunk_text, epic_name=epic_name)
+    raw = _chat_with_backoff(prompt, model="llama-3.1-8b-instant", max_tokens=350)
+    payload = parse_llm_json(raw)
+    if not isinstance(payload, dict):
+        raise ValueError("Regenerated epic must be a JSON object")
+    if not payload.get("epic_name") or not payload.get("description"):
+        raise ValueError("Regenerated epic missing required fields")
+    return {
+        "epic_name": str(payload["epic_name"]).strip(),
+        "description": str(payload["description"]).strip(),
     }
-    """
-
-    prompt = generate_epics_prompt(
-        chunk_id=chunk["chunk_id"],
-        chunk_text=chunk["text"]
-    )
-
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.3,
-        max_tokens=800
-    )
-
-    raw = response.choices[0].message.content.strip()
-
-    try:
-        epics = json.loads(raw)
-        if not isinstance(epics, list):
-            raise ValueError("Epic output is not a list")
-        return epics
-    except Exception as e:
-        raise ValueError(
-            f"Failed to parse epic JSON.\n\nModel output:\n{raw}"
-        ) from e
-
-
-# =========================
-# Regenerate single epic
-# =========================
-def regenerate_epic(chunk_text: str, epic_name: str) -> dict:
-    prompt = f"""
-You are a Senior Product Manager.
-
-Improve and refine the following Epic.
-Preserve intent, but enhance clarity, scope, and business value.
-
-Epic Name:
-{epic_name}
-
-Related Requirements:
-{chunk_text}
-
-Return STRICT JSON ONLY:
-
-{{
-  "epic_name": "string",
-  "description": "string"
-}}
-"""
-
-    response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.3,
-        max_tokens=400
-    )
-
-    raw = response.choices[0].message.content.strip()
-
-    try:
-        parsed = parse_llm_json(raw)
-
-        if not isinstance(parsed, dict):
-            raise ValueError("Regenerated epic is not a JSON object")
-
-        if "epic_name" not in parsed or "description" not in parsed:
-            raise ValueError("Missing required epic fields")
-
-        return parsed
-
-    except Exception as e:
-        raise ValueError(
-            f"Failed to parse regenerated epic JSON.\n\nModel output:\n{raw}"
-        ) from e
-
