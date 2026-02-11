@@ -28,7 +28,12 @@ def _init_epics(epics):
         eid = f"E{idx}"
         st.session_state.epics[eid] = {
             "epic_name": epic["epic_name"],
+            "summary": epic.get("summary", ""),
             "description": epic["description"],
+            "business_objectives": epic.get("business_objectives", []),
+            "scope": epic.get("scope", {"in_scope": [], "out_of_scope": []}),
+            "acceptance_criteria": epic.get("acceptance_criteria", []),
+            "definition_of_done": epic.get("definition_of_done", []),
             "covered_requirements": epic.get("covered_requirements", []),
             "source_chunk_ids": epic.get("source_chunk_ids", []),
             "locked": False,
@@ -58,6 +63,25 @@ if st.session_state.epics:
             st.markdown(f"### {epic_id}")
             epic["epic_name"] = st.text_input("Epic Name", epic["epic_name"], key=f"epic_name_{epic_id}")
             epic["description"] = st.text_area("Epic Description", epic["description"], key=f"epic_desc_{epic_id}")
+
+            if epic.get("summary"):
+                st.caption(epic["summary"])
+            with st.expander("Epic details", expanded=False):
+                if epic.get("business_objectives"):
+                    st.markdown("**Business Objectives**")
+                    for item in epic.get("business_objectives", []):
+                        st.write(f"- {item}")
+                scope = epic.get("scope", {})
+                if scope.get("in_scope") or scope.get("out_of_scope"):
+                    st.markdown("**Scope**")
+                    if scope.get("in_scope"):
+                        st.write("In scope:")
+                        for item in scope.get("in_scope", []):
+                            st.write(f"- {item}")
+                    if scope.get("out_of_scope"):
+                        st.write("Out of scope:")
+                        for item in scope.get("out_of_scope", []):
+                            st.write(f"- {item}")
 
             c1, c2 = st.columns(2)
             with c1:

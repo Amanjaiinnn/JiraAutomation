@@ -45,11 +45,35 @@ def _chat_with_backoff(prompt: str, model: str, max_tokens: int, temperature: fl
     raise RuntimeError("LLM call failed")
 
 
+def _repair_json_with_llm(raw_text: str) -> str:
+    repair_prompt = f"""
+Convert the following text into strictly valid RFC-8259 JSON.
+Rules:
+- Output JSON only.
+- Preserve original meaning.
+- Remove trailing commas and non-JSON tokens.
+- Use double quotes for all keys and strings.
+
+Text:
+{raw_text}
+"""
+    return _chat_with_backoff(
+        repair_prompt,
+        model="llama-3.1-8b-instant",
+        max_tokens=1200,
+        temperature=0,
+    )
+
+
 @lru_cache(maxsize=512)
 def _cached_generate(chunk_id: str, text_hash: str, chunk_text: str) -> tuple:
     prompt = generate_epics_prompt(chunk_id=chunk_id, chunk_text=chunk_text)
     raw = _chat_with_backoff(prompt, model="llama-3.3-70b-versatile", max_tokens=1000, temperature=0.2)
-    parsed = ensure_epic_schema(parse_llm_json(raw))
+    try:
+        parsed = ensure_epic_schema(parse_llm_json(raw))
+    except Exception:
+        repaired = _repair_json_with_llm(raw)
+        parsed = ensure_epic_schema(parse_llm_json(repaired))
 
     # retain provenance for better regeneration context
     for epic in parsed:

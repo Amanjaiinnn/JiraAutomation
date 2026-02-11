@@ -53,14 +53,26 @@ def ensure_epic_schema(data: Any) -> List[Dict[str, Any]]:
     for item in data:
         if not isinstance(item, dict):
             continue
+
         name = str(item.get("epic_name", "")).strip()
         desc = str(item.get("description", "")).strip()
         if not name or not desc:
             continue
+
         covered = item.get("covered_requirements", []) or []
+        scope = item.get("scope", {}) or {}
+
         normalized.append({
             "epic_name": name,
+            "summary": str(item.get("summary", "")).strip(),
             "description": desc,
+            "business_objectives": [str(x).strip() for x in item.get("business_objectives", []) if str(x).strip()],
+            "scope": {
+                "in_scope": [str(x).strip() for x in scope.get("in_scope", []) if str(x).strip()],
+                "out_of_scope": [str(x).strip() for x in scope.get("out_of_scope", []) if str(x).strip()],
+            },
+            "acceptance_criteria": [str(x).strip() for x in item.get("acceptance_criteria", []) if str(x).strip()],
+            "definition_of_done": [str(x).strip() for x in item.get("definition_of_done", []) if str(x).strip()],
             "covered_requirements": [str(x).strip() for x in covered if str(x).strip()],
             "assumptions": item.get("assumptions"),
         })
