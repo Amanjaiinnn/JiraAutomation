@@ -1,6 +1,3 @@
-
-
-
 import streamlit as st
 
 from analysis.duplicate_detector import detect_duplicates
@@ -33,6 +30,7 @@ def _init_epics(epics):
             "epic_name": epic["epic_name"],
             "description": epic["description"],
             "covered_requirements": epic.get("covered_requirements", []),
+            "source_chunk_ids": epic.get("source_chunk_ids", []),
             "locked": False,
             "stories": {},
         }
@@ -64,9 +62,13 @@ if st.session_state.epics:
             c1, c2 = st.columns(2)
             with c1:
                 if st.button("🔄 Re-generate Epic", key=f"regen_epic_{epic_id}"):
-                    source = "\n".join(epic.get("covered_requirements", [])) or epic["description"]
+                    source_chunks = [
+                        c["text"] for c in st.session_state.chunks
+                        if c["chunk_id"] in epic.get("source_chunk_ids", [])
+                    ]
+                    source = "\n\n".join(source_chunks) or "\n".join(epic.get("covered_requirements", [])) or epic["description"]
                     with st.spinner("Regenerating selected epic only..."):
-                        updated = regenerate_epic(source, epic["epic_name"])
+                        updated = regenerate_epic(source, epic["epic_name"], previous_description=epic["description"])
                     epic["epic_name"] = updated["epic_name"]
                     epic["description"] = updated["description"]
 

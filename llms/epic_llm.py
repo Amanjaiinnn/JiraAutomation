@@ -1,6 +1,3 @@
-
-
-
 import hashlib
 import json
 import os
@@ -25,7 +22,7 @@ def _get_client() -> Groq:
     return Groq(api_key=api_key)
 
 
-def _chat_with_backoff(prompt: str, model: str, max_tokens: int) -> str:
+def _chat_with_backoff(prompt: str, model: str, max_tokens: int, temperature: float = 0.2) -> str:
     client = _get_client()
     sleep_seconds = 1
     for attempt in range(4):
@@ -33,7 +30,7 @@ def _chat_with_backoff(prompt: str, model: str, max_tokens: int) -> str:
             kwargs = {
                 "model": model,
                 "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.2,
+                "temperature": temperature,
                 "max_tokens": max_tokens,
             }
             if model.endswith("8b-instant"):
@@ -51,8 +48,15 @@ def _chat_with_backoff(prompt: str, model: str, max_tokens: int) -> str:
 @lru_cache(maxsize=512)
 def _cached_generate(chunk_id: str, text_hash: str, chunk_text: str) -> tuple:
     prompt = generate_epics_prompt(chunk_id=chunk_id, chunk_text=chunk_text)
-    raw = _chat_with_backoff(prompt, model="llama-3.1-8b-instant", max_tokens=650)
+    raw = _chat_with_backoff(prompt, model="llama-3.3-70b-versatile", max_tokens=1000, temperature=0.2)
     parsed = ensure_epic_schema(parse_llm_json(raw))
+
+    # retain provenance for better regeneration context
+    for epic in parsed:
+        epic.setdefault("source_chunk_ids", [])
+        if chunk_id not in epic["source_chunk_ids"]:
+            epic["source_chunk_ids"].append(chunk_id)
+
     return tuple(json.dumps(epic, sort_keys=True) for epic in parsed)
 
 
@@ -62,15 +66,42 @@ def generate_epics_from_chunk(chunk: Dict[str, str]) -> List[Dict]:
     return [json.loads(x) for x in rows]
 
 
-def regenerate_epic(chunk_text: str, epic_name: str) -> Dict:
-    prompt = regenerate_epic_prompt(chunk_text=chunk_text, epic_name=epic_name)
-    raw = _chat_with_backoff(prompt, model="llama-3.1-8b-instant", max_tokens=350)
+def regenerate_epic(chunk_text: str, epic_name: str, previous_description: str = "") -> Dict:
+    prompt = regenerate_epic_prompt(
+        chunk_text=chunk_text,
+        epic_name=epic_name,
+        previous_description=previous_description,
+    )
+    raw = _chat_with_backoff(
+        prompt,
+        model="llama-3.3-70b-versatile",
+        max_tokens=900,
+        temperature=0.35,
+    )
     payload = parse_llm_json(raw)
     if not isinstance(payload, dict):
         raise ValueError("Regenerated epic must be a JSON object")
-    if not payload.get("epic_name") or not payload.get("description"):
+
+    new_name = str(payload.get("epic_name", "")).strip()
+    new_desc = str(payload.get("description", "")).strip()
+    if not new_name or not new_desc:
         raise ValueError("Regenerated epic missing required fields")
+
+    # fallback: if model returns near-identical output, retry with a stronger variance request
+    if previous_description and new_desc.lower().strip() == previous_description.lower().strip():
+        stronger_prompt = prompt + "\n\nIMPORTANT: Produce a materially different description wording and structure while preserving intent."
+        raw_2 = _chat_with_backoff(
+            stronger_prompt,
+            model="llama-3.3-70b-versatile",
+            max_tokens=900,
+            temperature=0.6,
+        )
+        payload_2 = parse_llm_json(raw_2)
+        if isinstance(payload_2, dict):
+            new_name = str(payload_2.get("epic_name", new_name)).strip() or new_name
+            new_desc = str(payload_2.get("description", new_desc)).strip() or new_desc
+
     return {
-        "epic_name": str(payload["epic_name"]).strip(),
-        "description": str(payload["description"]).strip(),
+        "epic_name": new_name,
+        "description": new_desc,
     }
