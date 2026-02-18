@@ -176,6 +176,7 @@ if st.session_state.epics:
 
                             if (epic_id, story_id) in st.session_state.generated_code:
                                 for filename, code in st.session_state.generated_code[(epic_id, story_id)].items():
+                                    st.markdown(f"**{filename}**")
                                     st.code(code, language=filename.split(".")[-1])
 
                 override_duplicates = True
