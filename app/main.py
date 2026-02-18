@@ -1,15 +1,17 @@
 import streamlit as st
 
-from analysis.duplicate_detector import detect_duplicates
-from codegen.code_generator import SUPPORTED_STACKS, generate_code_for_story
+from api_client import (
+    check_duplicates,
+    create_jira_stories,
+    generate_code,
+    generate_epics,
+    generate_stories,
+    regenerate_epic,
+    regenerate_story,
+)
+from codegen.code_generator import SUPPORTED_STACKS
 from ingestion.chunker import chunk_requirements
 from ingestion.loader import load_requirements
-from jira_integration.story_creator import create_jira_stories
-from llms.epic_llm import regenerate_epic
-from llms.epic_pipeline import generate_epics_from_requirements
-from llms.reducer import merge_and_dedupe
-from llms.story_llm import generate_stories_from_chunk, regenerate_story
-from rag.retriever import retrieve_top_k
 
 
 st.set_page_config(page_title="Jira AI Automation", layout="wide")
@@ -20,6 +22,7 @@ def _ensure_state():
     st.session_state.setdefault("chunks", [])
     st.session_state.setdefault("epics", {})
     st.session_state.setdefault("generated_code", {})
+    st.session_state.setdefault("duplicate_results", {})
 
 
 def _init_epics(epics):
@@ -51,7 +54,7 @@ if uploaded:
 
     if st.button("🧩 Generate Epics", use_container_width=True):
         with st.spinner("Running MAP-REDUCE epic generation..."):
-            epics = generate_epics_from_requirements(st.session_state.chunks)
+            epics = generate_epics(st.session_state.chunks)
         _init_epics(epics)
 
 
@@ -87,8 +90,7 @@ if st.session_state.epics:
             with c1:
                 if st.button("🔄 Re-generate Epic", key=f"regen_epic_{epic_id}"):
                     source_chunks = [
-                        c["text"] for c in st.session_state.chunks
-                        if c["chunk_id"] in epic.get("source_chunk_ids", [])
+                        c["text"] for c in st.session_state.chunks if c["chunk_id"] in epic.get("source_chunk_ids", [])
                     ]
                     source = "\n\n".join(source_chunks) or "\n".join(epic.get("covered_requirements", [])) or epic["description"]
                     with st.spinner("Regenerating selected epic only..."):
@@ -99,11 +101,7 @@ if st.session_state.epics:
             with c2:
                 if st.button("📄 Generate Stories for this Epic", key=f"gen_stories_{epic_id}"):
                     with st.spinner("Generating stories for selected epic..."):
-                        epic_chunks = retrieve_top_k(st.session_state.chunks, epic["epic_name"], k=4)
-                        stories = []
-                        for chunk in epic_chunks:
-                            stories.extend(generate_stories_from_chunk(epic, chunk))
-                        merged = merge_and_dedupe(stories)
+                        merged = generate_stories(epic, st.session_state.chunks, top_k=4)
                     epic["stories"] = {
                         f"S{i+1}": {
                             **story,
@@ -118,45 +116,67 @@ if st.session_state.epics:
                 duplicates_found = False
                 for story_id, story in epic["stories"].items():
                     with st.expander(f"{story_id}: {story['summary']}"):
-                        story["selected"] = st.checkbox("Create in Jira", value=story["selected"], key=f"sel_{epic_id}_{story_id}")
-                        story["summary"] = st.text_input("Summary", story["summary"], key=f"sum_{epic_id}_{story_id}")
-                        story["description"] = st.text_area("Description", story.get("description", ""), key=f"desc_{epic_id}_{story_id}")
-                        story["acceptance_criteria"] = st.text_area(
-                            "Acceptance criteria (one per line)",
-                            "\n".join(story.get("acceptance_criteria", [])),
-                            key=f"ac_{epic_id}_{story_id}",
-                        ).splitlines()
-                        story["definition_of_done"] = st.text_area(
-                            "Definition of done (one per line)",
-                            "\n".join(story.get("definition_of_done", [])),
-                            key=f"dod_{epic_id}_{story_id}",
-                        ).splitlines()
+                        story_tabs = st.tabs(["Story", "Duplicate Story Tag", "Code Generation"])
 
-                        if st.button("🔁 Re-generate Story", key=f"regen_story_{epic_id}_{story_id}"):
-                            chunk_id = story.get("source_chunk_id")
-                            source_chunk = next((c for c in st.session_state.chunks if c["chunk_id"] == chunk_id), None)
-                            source = source_chunk["text"] if source_chunk else epic["description"]
-                            story.update(regenerate_story(story, source))
+                        with story_tabs[0]:
+                            story["selected"] = st.checkbox(
+                                "Create in Jira", value=story["selected"], key=f"sel_{epic_id}_{story_id}"
+                            )
+                            story["summary"] = st.text_input("Summary", story["summary"], key=f"sum_{epic_id}_{story_id}")
+                            story["description"] = st.text_area(
+                                "Description", story.get("description", ""), key=f"desc_{epic_id}_{story_id}"
+                            )
+                            story["acceptance_criteria"] = st.text_area(
+                                "Acceptance criteria (one per line)",
+                                "\n".join(story.get("acceptance_criteria", [])),
+                                key=f"ac_{epic_id}_{story_id}",
+                            ).splitlines()
+                            story["definition_of_done"] = st.text_area(
+                                "Definition of done (one per line)",
+                                "\n".join(story.get("definition_of_done", [])),
+                                key=f"dod_{epic_id}_{story_id}",
+                            ).splitlines()
 
-                        dups = detect_duplicates(story)
-                        if dups:
-                            duplicates_found = True
-                            st.warning("Possible duplicates")
-                            for dup in dups:
-                                st.write(f"- {dup['jira_key']} ({dup['similarity']})")
+                            if st.button("🔁 Re-generate Story", key=f"regen_story_{epic_id}_{story_id}"):
+                                chunk_id = story.get("source_chunk_id")
+                                source_chunk = next((c for c in st.session_state.chunks if c["chunk_id"] == chunk_id), None)
+                                source = source_chunk["text"] if source_chunk else epic["description"]
+                                story.update(regenerate_story(story, source))
 
-                        stack = st.selectbox(
-                            "Tech Stack",
-                            options=list(SUPPORTED_STACKS.keys()),
-                            format_func=lambda k: SUPPORTED_STACKS[k]["label"],
-                            key=f"stack_{epic_id}_{story_id}",
-                        )
-                        if st.button("⚙️ Generate Code", key=f"code_{epic_id}_{story_id}"):
-                            st.session_state.generated_code[(epic_id, story_id)] = generate_code_for_story(story, stack)
+                        with story_tabs[1]:
+                            st.markdown("**Generated Story for Duplicate Check**")
+                            st.write(f"Summary: {story.get('summary', '')}")
+                            st.write(f"Description: {story.get('description', '')}")
 
-                        if (epic_id, story_id) in st.session_state.generated_code:
-                            for filename, code in st.session_state.generated_code[(epic_id, story_id)].items():
-                                st.code(code, language=filename.split(".")[-1])
+                            if st.button("🔍 Check Duplicates", key=f"dups_{epic_id}_{story_id}"):
+                                st.session_state.duplicate_results[(epic_id, story_id)] = check_duplicates(story)
+
+                            dups = st.session_state.duplicate_results.get((epic_id, story_id), [])
+                            if dups:
+                                duplicates_found = True
+                                st.warning("Possible duplicates")
+                                for dup in dups:
+                                    st.write(f"- {dup['jira_key']} ({dup['similarity']})")
+                            elif (epic_id, story_id) in st.session_state.duplicate_results:
+                                st.success("No duplicates found for this story.")
+
+                        with story_tabs[2]:
+                            st.markdown("**Story for Code Generation**")
+                            st.write(f"Summary: {story.get('summary', '')}")
+                            st.write(f"Description: {story.get('description', '')}")
+
+                            stack = st.selectbox(
+                                "Tech Stack",
+                                options=list(SUPPORTED_STACKS.keys()),
+                                format_func=lambda k: SUPPORTED_STACKS[k]["label"],
+                                key=f"stack_{epic_id}_{story_id}",
+                            )
+                            if st.button("⚙️ Generate Code", key=f"code_{epic_id}_{story_id}"):
+                                st.session_state.generated_code[(epic_id, story_id)] = generate_code(story, stack)
+
+                            if (epic_id, story_id) in st.session_state.generated_code:
+                                for filename, code in st.session_state.generated_code[(epic_id, story_id)].items():
+                                    st.code(code, language=filename.split(".")[-1])
 
                 override_duplicates = True
                 if duplicates_found:
