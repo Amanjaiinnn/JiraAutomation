@@ -9,4 +9,5 @@ jira
 pytest
 fastapi
 uvicorn
+python-multipart
 requests
