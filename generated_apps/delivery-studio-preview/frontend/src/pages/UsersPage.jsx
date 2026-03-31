@@ -4,7 +4,7 @@ import { apiGet, apiPost } from "../api/client";
 const workflows = [
   {
     "storyKey": "user_create",
-    "title": "As a user, I want to create a task with title, description, due date, and priority so that I can manage my tasks efficiently.",
+    "title": "Create User",
     "fields": [
       "title",
       "details"
@@ -68,7 +68,7 @@ export function UsersPage() {
     <div className="module-shell">
       <section className="module-hero">
         <h2>Users</h2>
-        <p>Generated workflow pages share one product design system, connected backend routes, and persistent PostgreSQL-backed records for every major module.</p>
+        <p>Review the latest records, submit new entries, and manage this workflow from a single page.</p>
       </section>
 
       <div className="module-layout">

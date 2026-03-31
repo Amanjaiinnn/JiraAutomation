@@ -68,7 +68,7 @@ export function StoryPage() {
     <div className="module-shell">
       <section className="module-hero">
         <h2>Story</h2>
-        <p>Generated workflow pages share one product design system, connected backend routes, and persistent PostgreSQL-backed records for every major module.</p>
+        <p>Review the latest records, submit new entries, and manage this workflow from a single page.</p>
       </section>
 
       <div className="module-layout">

@@ -99,7 +99,7 @@ export function App() {
       <header className="app-topbar">
         <div>
           <h1>Generated Story Application</h1>
-          <p>A cohesive, production-style workflow generated from your current stories with consistent UI, connected services, and PostgreSQL-backed persistence.</p>
+          <p>Track activity, review recent updates, and move through the main workflows from one place.</p>
         </div>
       </header>
       {hasAuth ? (

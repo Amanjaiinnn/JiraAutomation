@@ -47,6 +47,50 @@ def _title_case(module: str) -> str:
     return "".join(part.capitalize() for part in module.split("_"))
 
 
+def _display_title(module: str, route_name: str) -> str:
+    normalized_module = module.replace("_", " ").strip() or "Item"
+    singular_module = normalized_module[:-1] if normalized_module.endswith("s") else normalized_module
+    tokens = [token for token in route_name.replace("-", "_").split("_") if token]
+    if not tokens:
+        return _title_case(module)
+
+    action_map = {
+        "create": "Create",
+        "add": "Add",
+        "new": "Create",
+        "view": "View",
+        "list": "View",
+        "show": "View",
+        "edit": "Edit",
+        "update": "Update",
+        "delete": "Delete",
+        "remove": "Delete",
+        "filter": "Filter",
+        "search": "Search",
+        "register": "Register",
+        "login": "Login",
+        "logout": "Logout",
+        "sessions": "Sessions",
+        "session": "Session",
+        "submit": "Save",
+    }
+
+    first = tokens[0].lower()
+    action = action_map.get(first, first.replace("_", " ").title())
+
+    if module == "auth":
+        if action in {"Register", "Login", "Logout", "Sessions", "Session"}:
+            return action
+        return f"{action} Auth"
+
+    if action in {"View", "Filter", "Search", "List"}:
+        noun = normalized_module.title()
+    else:
+        noun = singular_module.title()
+
+    return f"{action} {noun}".strip()
+
+
 def _extract_module_name(story: dict[str, Any]) -> str:
     title = str(story.get("title") or story.get("summary") or "module")
     lowered = title.lower()
@@ -368,6 +412,7 @@ def _build_story_workflow(
     return {
         "story_key": story_key,
         "story_title": title,
+        "display_title": _display_title(specification["module"], route_name),
         "module": specification["module"],
         "route_name": route_name,
         "fields": specification["functions"][0]["inputs"],
@@ -483,7 +528,7 @@ def {function_name}(data: dict):
         workflow="{workflow["route_name"]}",
         data=data,
         expected_fields={workflow["fields"]!r},
-        success_message="{workflow["story_title"]} completed",
+        success_message="{workflow.get("display_title") or workflow["story_title"]} completed",
     )
 """.strip()
         )
@@ -1454,7 +1499,7 @@ export function App() {{
       <header className="app-topbar">
         <div>
           <h1>Generated Story Application</h1>
-          <p>A cohesive, production-style workflow generated from your current stories with consistent UI, connected services, and PostgreSQL-backed persistence.</p>
+          <p>Track activity, review recent updates, and move through the main workflows from one place.</p>
         </div>
       </header>
       {{hasAuth ? (
@@ -1481,7 +1526,7 @@ export function App() {{
 
 
 def _render_frontend_auth_page(workflows: list[dict[str, Any]]) -> str:
-    workflow_titles = [workflow["story_title"] for workflow in workflows if workflow.get("story_title")]
+    workflow_titles = [workflow.get("display_title") or workflow["story_title"] for workflow in workflows if workflow.get("story_title")]
     template = """import React, { useEffect, useMemo, useState } from "react";
 import { apiGet, apiPost } from "../api/client";
 
@@ -1691,12 +1736,11 @@ def _render_frontend_page(module: str, workflows: list[dict[str, Any]]) -> str:
     workflow_data = [
         {
             "storyKey": workflow["story_key"],
-            "title": workflow["story_title"],
+            "title": workflow.get("display_title") or workflow["story_title"],
             "fields": workflow["fields"] or ["title", "details"],
             "submitPath": _workflow_submit_path(module, workflow),
             "listPath": _module_list_path(module),
             "routeName": workflow["route_name"],
-            "uiGuidance": workflow.get("ui_guidance", ""),
         }
         for workflow in workflows
     ]
@@ -1758,7 +1802,7 @@ export function {title}Page() {{
     <div className="module-shell">
       <section className="module-hero">
         <h2>{title}</h2>
-        <p>{{currentWorkflow?.uiGuidance || "Generated workflow pages share one product design system, connected backend routes, and persistent PostgreSQL-backed records for every major module."}}</p>
+        <p>Review the latest records, submit new entries, and manage this workflow from a single page.</p>
       </section>
 
       <div className="module-layout">
@@ -2264,7 +2308,7 @@ def _render_node_server(story_registry: dict[str, list[dict[str, Any]]]) -> str:
 app.post("{_workflow_submit_path(module, workflow)}", (req, res) => {{
   const item = {{ id: state.{module}.length + 1, workflow: "{workflow["route_name"]}", ...req.body }};
   state.{module}.push(item);
-  res.json({{ message: "{workflow["story_title"]} completed", data: item }});
+  res.json({{ message: "{workflow.get("display_title") or workflow["story_title"]} completed", data: item }});
 }});
 """.strip()
             )

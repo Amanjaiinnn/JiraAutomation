@@ -9,6 +9,12 @@ class UserCreateRequest(BaseModel):
     description: str
     due_date: str
     priority: str
+class UserViewRequest(BaseModel):
+    title: str
+    description: str
+    due_date: str
+    priority: str
+    status: str
 
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
@@ -25,3 +31,8 @@ def submit_user_create(payload: UserCreateRequest):
 @router.post("")
 def create_tasks(payload: UserCreateRequest):
     return tasks_service.create_user_create(payload.model_dump())
+@router.post("/view-sorting-filtering")
+def submit_user_view(payload: UserViewRequest):
+    response = tasks_service.create_user_view(payload.model_dump())
+    
+    return response

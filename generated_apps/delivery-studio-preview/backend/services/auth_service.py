@@ -223,11 +223,3 @@ def list_items():
             return cursor.fetchall()
     finally:
         connection.close()
-
-
-def create_register(data: dict):
-    return register_user(data)
-
-
-def create_login(data: dict):
-    return login_user(data)

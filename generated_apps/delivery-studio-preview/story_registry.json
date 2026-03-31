@@ -16,12 +16,16 @@
           "The system creates a new user account.",
           "The system notifies the administrator of new user registration.",
           "The user receives a confirmation email with a link to activate the account.",
-          "The user can log in after activating the account."
+          "The user can log in after activating the account.",
+          "The user navigates to the registration page, enters a valid email and password, and submits the form. The system validates the email and password, checks for existing users, and creates a new user account. The system administrator is notified of the new user registration. The user receives a confirmation email with a link to activate the account. The user can log in after activating the account. The system ensures the security and integrity of user data.",
+          "The user navigates to the registration page, enters a valid email and password, and submits the form. The system validates the email and password, checks for existing users, and creates a new user account. The system administrator is notified of the new user registration. The user receives a confirmation email with a link to activate the account. The user can log in after activating the account. The system ensures the security and integrity of user data.",
+          "The user can register with a valid email and password.",
+          "The system validates the email and password.",
+          "The system checks for existing users."
         ],
         "outputs": [
           "result"
-        ],
-        "ui_guidance": "there should be an industry level register window with input fields like email, full name and passwprd"
+        ]
       },
       {
         "story_key": "login_2",
@@ -97,6 +101,28 @@
           "error_message",
           "result"
         ]
+      },
+      {
+        "story_key": "user_view",
+        "story_title": "As a user, I want to view tasks with sorting and filtering options so that I can manage my tasks efficiently.",
+        "module": "tasks",
+        "route_name": "view-sorting-filtering",
+        "fields": [
+          "title",
+          "description",
+          "due_date",
+          "priority",
+          "status"
+        ],
+        "logic_steps": [
+          "Tasks are displayed with sorting and filtering options.",
+          "Sorting and filtering options are functional and validated.",
+          "Tasks are displayed correctly after sorting and filtering."
+        ],
+        "outputs": [
+          "result"
+        ],
+        "ui_guidance": "the created tasks should be shown below in a list \nthe list should have three columns : to-do, in progress, done\nthe tasks can be moved from one column to another using drag and drop or a toggle button \nnewly created tasks should be automatically added to the to-do section"
       }
     ]
   }

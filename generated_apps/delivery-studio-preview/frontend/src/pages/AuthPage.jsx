@@ -1,12 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { apiGet, apiPost } from "../api/client";
 
-const workflowTitles = [
-  "As a user, I want to register with a valid email and password to access the system.",
-  "As a user, I want to log in with a valid email and password to access the system.",
-  "As a user, I want to log out of the system to ensure security."
-];
-
 const ROUTES = {
   register: "#/register",
   login: "#/login",
@@ -121,13 +115,6 @@ export function AuthPage({ onAuthenticated = () => {}, onLoggedOut = () => {} })
         <div>
           <h1>{welcomeTitle}</h1>
           <p className="hero-copy">Sign in first to unlock the application. Protected pages and navigation stay hidden until the session is authenticated.</p>
-          {workflowTitles.length ? (
-            <div className="button-row" style={{ marginTop: 12 }}>
-              {workflowTitles.map((title) => (
-                <span key={title} className="status-badge">{title}</span>
-              ))}
-            </div>
-          ) : null}
         </div>
       </header>
 

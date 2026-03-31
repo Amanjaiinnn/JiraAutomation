@@ -69,3 +69,10 @@ def create_user_create(data: dict):
         expected_fields=['title', 'description', 'due_date', 'priority'],
         success_message="As a user, I want to create a task with title, description, due date, and priority so that I can manage my tasks efficiently. completed",
     )
+def create_user_view(data: dict):
+    return _create_record(
+        workflow="view-sorting-filtering",
+        data=data,
+        expected_fields=['title', 'description', 'due_date', 'priority', 'status'],
+        success_message="As a user, I want to view tasks with sorting and filtering options so that I can manage my tasks efficiently. completed",
+    )

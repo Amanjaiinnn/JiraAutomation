@@ -43,3 +43,14 @@ Steps:
 
 Expected Result:
 The module accepts input, persists or lists data, and does not break earlier story flows.
+
+## As a user, I want to view tasks with sorting and filtering options so that I can manage my tasks efficiently.
+
+Steps:
+1. Open the generated application on `http://localhost:5174`.
+2. Sign in if authentication is enabled, then navigate to the relevant module page.
+3. Enter valid values in the generated form fields.
+4. Submit the form and verify the API response panel updates.
+
+Expected Result:
+The module accepts input, persists or lists data, and does not break earlier story flows.
