@@ -8,8 +8,11 @@ export default defineConfig({
       "/requirements": "http://localhost:8000",
       "/epics": "http://localhost:8000",
       "/stories": "http://localhost:8000",
+      "/project": "http://localhost:8000",
+      "/workspaces": "http://localhost:8000",
       "/jira": "http://localhost:8000",
       "/health": "http://localhost:8000",
+      "/generated-demo": "http://localhost:8000",
     },
   },
 });

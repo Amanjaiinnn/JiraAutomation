@@ -54,7 +54,39 @@
 
 from __future__ import annotations
 
+import re
+
 from jira_integration.jira_client import get_jira, get_current_jira_config
+
+JIRA_SUMMARY_LIMIT = 255
+SUMMARY_FILLER_PATTERN = re.compile(
+    r"\b(?:epic|story|user story|jira|generated|ai|feature|capability|module|workflow)\b",
+    re.IGNORECASE,
+)
+
+
+def _normalize_summary(value: str, limit: int = JIRA_SUMMARY_LIMIT) -> str:
+    summary = " ".join(str(value).split()).strip()
+    if not summary:
+        raise ValueError("Jira summary cannot be empty")
+    if len(summary) <= limit:
+        return summary
+
+    # Remove low-signal filler terms before shortening on a word boundary.
+    compact = SUMMARY_FILLER_PATTERN.sub("", summary)
+    compact = re.sub(r"\s*[:\-|]\s*", " ", compact)
+    compact = " ".join(compact.split()).strip(" -:|,.;")
+    candidate = compact or summary
+    if len(candidate) <= limit:
+        return candidate
+
+    truncated = candidate[:limit].rsplit(" ", 1)[0].strip(" -:|,.;")
+    if not truncated:
+        truncated = candidate[:limit].strip(" -:|,.;")
+    if truncated:
+        return truncated
+
+    return candidate[:limit].strip()
 
 
 def create_jira_stories(stories: list[dict]) -> list[str]:
@@ -68,7 +100,7 @@ def create_jira_stories(stories: list[dict]) -> list[str]:
     created_issues: list[str] = []
 
     for story in stories:
-        epic_name = story["epic_name"]
+        epic_name = _normalize_summary(story["epic_name"])
         if epic_name not in epic_map:
             epic = jira.create_issue(
                 project={"key": project_key},
@@ -79,7 +111,7 @@ def create_jira_stories(stories: list[dict]) -> list[str]:
             epic_map[epic_name] = epic.key
 
     for story in stories:
-        epic_key = epic_map[story["epic_name"]]
+        epic_key = epic_map[_normalize_summary(story["epic_name"])]
         description = f"""{story['description']}
 
 Acceptance Criteria:
@@ -90,7 +122,7 @@ Definition of Done:
 
         issue = jira.create_issue(
             project={"key": project_key},
-            summary=story["summary"],
+            summary=_normalize_summary(story["summary"]),
             description=description,
             issuetype={"name": "Task"},
             parent={"key": epic_key},

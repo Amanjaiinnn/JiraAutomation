@@ -1,0 +1,42 @@
+{
+  "workspace_id": "taskflow",
+  "workspace_name": "taskflow",
+  "saved_at": "2026-03-17T05:58:27.275376+00:00",
+  "requirements_filename": "",
+  "chunks": [],
+  "epics": [
+    {
+      "epic_name": "Epic Name",
+      "summary": "Epic Summary",
+      "details": "Epic Details",
+      "acceptance_criteria": [
+        "Epic AC 1",
+        "Epic AC 2"
+      ],
+      "definition_of_done": [
+        "Epic DoD 1"
+      ],
+      "stories": [
+        {
+          "title": "Story Name",
+          "summary": "Story Summary",
+          "details": "Story Details",
+          "acceptance_criteria": [
+            "Story AC 1"
+          ],
+          "definition_of_done": [
+            "Story DoD 1"
+          ],
+          "unit_test_files": {}
+        }
+      ]
+    }
+  ],
+  "project_stack": "",
+  "project_files": {
+    "backend/main.py": "print('stable-folder')"
+  },
+  "project_preview": {},
+  "project_demo": {},
+  "selected_file_path": ""
+}

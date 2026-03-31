@@ -1,10 +1,15 @@
 import os
 import re
 import json
+import os
+import subprocess
+import sys
+import tempfile
 from typing import Any
+from pathlib import Path
 
 from dotenv import load_dotenv
-from groq import Groq
+from groq import BadRequestError, Groq
 
 from llms.parser import parse_llm_json
 
@@ -12,33 +17,313 @@ load_dotenv()
 
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-SUPPORTED_STACKS = {
+FRONTEND_STACKS = {
+    "react_vite": {
+        "label": "React + Vite",
+        "prompt": "React with Vite, modern functional components, and reusable UI composition",
+    },
+    "nextjs": {
+        "label": "Next.js",
+        "prompt": "Next.js with the App Router, server/client component boundaries, and production-ready routing",
+    },
+    "vue_vite": {
+        "label": "Vue 3 + Vite",
+        "prompt": "Vue 3 with Vite, Composition API, and structured single-file components",
+    },
+}
+
+BACKEND_STACKS = {
     "python_fastapi": {
         "label": "Python + FastAPI",
-        "prompt": "Python using FastAPI framework",
+        "prompt": "Python using FastAPI with layered routers, services, schemas, and repositories",
     },
     "java_spring": {
         "label": "Java + Spring Boot",
-        "prompt": "Java using Spring Boot",
+        "prompt": "Java using Spring Boot with controllers, services, DTOs, repositories, and configuration classes",
     },
     "node_express": {
         "label": "Node.js + Express",
-        "prompt": "Node.js using Express",
-    },
-    "react": {
-        "label": "React Frontend",
-        "prompt": "React with functional components",
+        "prompt": "Node.js using Express with modular routes, services, data access, and middleware",
     },
 }
+
+DATABASE_OPTIONS = {
+    "postgresql": {
+        "label": "PostgreSQL",
+        "prompt": "PostgreSQL as the primary relational database",
+    }
+}
+
+DEFAULT_PROJECT_CONFIG = {
+    "frontend_stack": "react_vite",
+    "backend_stack": "python_fastapi",
+    "database": "postgresql",
+}
+
+SUPPORTED_STACKS = {
+    "python_fastapi": {
+        **DEFAULT_PROJECT_CONFIG,
+        "backend_stack": "python_fastapi",
+        "label": "React + FastAPI + PostgreSQL",
+        "prompt": "React frontend with a Python FastAPI backend and PostgreSQL",
+    },
+    "java_spring": {
+        **DEFAULT_PROJECT_CONFIG,
+        "backend_stack": "java_spring",
+        "label": "React + Spring Boot + PostgreSQL",
+        "prompt": "React frontend with a Java Spring Boot backend and PostgreSQL",
+    },
+    "node_express": {
+        **DEFAULT_PROJECT_CONFIG,
+        "backend_stack": "node_express",
+        "label": "React + Express + PostgreSQL",
+        "prompt": "React frontend with a Node.js Express backend and PostgreSQL",
+    },
+    "react": {
+        **DEFAULT_PROJECT_CONFIG,
+        "label": "React + FastAPI + PostgreSQL",
+        "prompt": "React frontend with a Python FastAPI backend and PostgreSQL",
+    },
+}
+
+TEST_CATEGORY_HINTS = [
+    "functional",
+    "negative",
+    "edge",
+    "integration",
+    "performance",
+    "security",
+    "accessibility",
+]
 
 CODEGEN_MODEL = os.getenv("CODEGEN_MODEL", "llama-3.3-70b-versatile")
 MAX_PARSE_RETRIES = 2
 JSON_OBJECT_PATTERN = re.compile(r"\{.*\}", re.DOTALL)
+ROUTE_PATTERN = re.compile(r'@(app|router)\.(get|post|put|delete|patch)\(["\']([^"\']+)["\']')
+EXPRESS_ROUTE_PATTERN = re.compile(r"\b(app|router)\.(get|post|put|delete|patch)\(\s*['\"]([^'\"]+)['\"]")
+PATH_PARAM_PATTERN = re.compile(r"\{([^}]+)\}")
 
 
-def _build_story_prompt(story: dict[str, Any], stack_prompt: str) -> str:
-    acceptance_criteria = "\n".join(story.get("acceptance_criteria", []))
-    definition_of_done = "\n".join(story.get("definition_of_done", []))
+def normalize_project_config(
+    stack_key: str | None = None,
+    project_config: dict[str, Any] | None = None,
+) -> dict[str, str]:
+    config = dict(DEFAULT_PROJECT_CONFIG)
+
+    if stack_key:
+        legacy = SUPPORTED_STACKS.get(stack_key, {})
+        if legacy:
+            for key in DEFAULT_PROJECT_CONFIG:
+                value = legacy.get(key)
+                if isinstance(value, str) and value:
+                    config[key] = value
+        elif stack_key in FRONTEND_STACKS:
+            config["frontend_stack"] = stack_key
+        elif stack_key in BACKEND_STACKS:
+            config["backend_stack"] = stack_key
+
+    if isinstance(project_config, dict):
+        frontend_stack = str(project_config.get("frontend_stack") or "").strip()
+        backend_stack = str(project_config.get("backend_stack") or "").strip()
+        database = str(project_config.get("database") or "").strip()
+
+        if frontend_stack in FRONTEND_STACKS:
+            config["frontend_stack"] = frontend_stack
+        if backend_stack in BACKEND_STACKS:
+            config["backend_stack"] = backend_stack
+        if database in DATABASE_OPTIONS:
+            config["database"] = database
+
+    return config
+
+
+def _project_config_label(project_config: dict[str, str]) -> str:
+    frontend = FRONTEND_STACKS[project_config["frontend_stack"]]["label"]
+    backend = BACKEND_STACKS[project_config["backend_stack"]]["label"]
+    database = DATABASE_OPTIONS[project_config["database"]]["label"]
+    return f"{frontend} + {backend} + {database}"
+
+
+def _project_config_prompt(project_config: dict[str, str]) -> str:
+    frontend = FRONTEND_STACKS[project_config["frontend_stack"]]["prompt"]
+    backend = BACKEND_STACKS[project_config["backend_stack"]]["prompt"]
+    database = DATABASE_OPTIONS[project_config["database"]]["prompt"]
+    return f"{frontend}; {backend}; {database}"
+
+
+def _story_lines(story: dict[str, Any], key: str) -> list[str]:
+    value = story.get(key, [])
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    if value is None:
+        return []
+    text = str(value).strip()
+    return [text] if text else []
+
+
+def _story_section(story: dict[str, Any], key: str, fallback: str = "Not provided.") -> str:
+    lines = _story_lines(story, key)
+    if not lines:
+        return fallback
+    return "\n".join(f"- {line}" for line in lines)
+
+
+def _ui_reference_section(story: dict[str, Any]) -> str:
+    reference = story.get("ui_reference")
+    if not isinstance(reference, dict):
+        return "No explicit UI prompt provided."
+
+    text = str(reference.get("text") or "").strip()
+    image_name = str(reference.get("image_name") or "").strip()
+    parts: list[str] = []
+    if text:
+        parts.append(f"Visualization notes:\n{text}")
+    if image_name:
+        parts.append(f"Reference screenshot attached: {image_name}")
+    return "\n".join(parts) if parts else "No explicit UI prompt provided."
+
+
+def _build_stack_requirements(project_config: dict[str, str]) -> str:
+    frontend_stack = project_config["frontend_stack"]
+    backend_stack = project_config["backend_stack"]
+    database = project_config["database"]
+
+    frontend_requirements = {
+        "react_vite": """
+Frontend requirements for react_vite:
+- Build a polished, fully functional SPA with reusable components, clear layout hierarchy, loading states, empty states, validation, optimistic/disabled submit states, and success/error feedback.
+- Use a real app shell with header or navigation, separate screens for major flows, and production-style folder structure.
+- Prefer a multi-page feel with clear navigation rather than rendering all workflows as raw forms on one page.
+- Do not return a single-page placeholder or a minimal demo form unless the story truly requires only one form.
+- Maintain one coherent design system across the full generated app so new screens feel like part of the same product, not isolated pages.
+- Use the same quality bar across auth and non-auth screens: polished layout, consistent navigation, strong visual hierarchy, clear CTAs, and durable interaction patterns.
+- Generate screens and workflows in the style of high-quality AI product builders such as Replit: cohesive, practical, consistent, and runnable rather than flashy but fake.
+""".strip(),
+        "nextjs": """
+Frontend requirements for nextjs:
+- Use Next.js routing, page-level composition, structured layouts, and production-ready data-fetching patterns appropriate for the story.
+- Build real pages with clear navigation, UX feedback, loading/error states, and maintainable component boundaries.
+- Generate a complete product-style experience, not a demo scaffold.
+""".strip(),
+        "vue_vite": """
+Frontend requirements for vue_vite:
+- Use Vue 3 Composition API, modular single-file components, proper state flow, and production-style screen composition.
+- Build a complete interactive UI with validation, feedback states, and real navigation between major screens.
+- Generate a complete product-style experience, not a demo scaffold.
+""".strip(),
+    }[frontend_stack]
+
+    backend_requirements = {
+        "python_fastapi": """
+Backend requirements for python_fastapi:
+- Use FastAPI with clear separation across routers, services, schemas/models, and database/repository code.
+- Include startup-safe configuration, requirements.txt, request validation, response payloads, and error handling.
+- Ensure the backend can run with `uvicorn main:app --reload` or an equivalent documented entrypoint.
+- Prefer explicit domain-oriented endpoints over generic CRUD placeholders when the story is user-facing.
+- When a story introduces a business entity such as tasks, projects, comments, or dashboards, expose complete entity workflows through well-named routes and services.
+""".strip(),
+        "java_spring": """
+Backend requirements for java_spring:
+- Use Spring Boot with controller, service, DTO/entity, repository, and configuration layers.
+- Include build and run files, request validation, exception handling, and complete wiring for the chosen story.
+""".strip(),
+        "node_express": """
+Backend requirements for node_express:
+- Use Express with modular routers, service/data-access layers, environment configuration, and structured validation/error handling.
+- Include package.json, startup scripts, and complete REST endpoints required by the frontend.
+""".strip(),
+    }[backend_stack]
+
+    database_requirements = {
+        "postgresql": """
+Database requirements for postgresql:
+- Use PostgreSQL for persistent storage, not sqlite or in-memory storage.
+- Wire the backend to PostgreSQL via environment-based configuration such as `DATABASE_URL`.
+- Include schema creation or migration/bootstrap logic needed for local setup, and make all generated frontend/backend flows persist against PostgreSQL.
+- Include a `.env.example` or clear setup instructions that show the required PostgreSQL connection variables.
+- Persist every major business workflow introduced by the story in PostgreSQL, not only authentication.
+- If the story creates or edits domain data such as tasks, store all meaningful fields in PostgreSQL and make the frontend read/write the same persisted records.
+""".strip()
+    }[database]
+
+    auth_requirements = """
+Authentication and UX requirements:
+- If the app or story includes authentication, implement separate Register and Login pages rather than a combined auth form.
+- Do not expose product content, user menus, or module navigation before login; unauthenticated users should only be able to use the authentication flow.
+- Do not place auth or user buttons in the main product top bar just to reveal protected content.
+- Keep Register and Login within dedicated auth screens or an auth-only shell, and only reveal the protected application after successful login.
+- Show Logout only when the user is logged in, and keep it outside the unauthenticated top-level navigation.
+- Display clear success messages such as `Account created successfully`, `Logged in successfully`, and `Logged out successfully`.
+- Ensure the frontend, backend, and PostgreSQL database are all connected for authentication and session state.
+- Avoid placeholder auth flows; wire forms to real endpoints and persistence.
+- Keep Register and Login on different screens with clear redirects or navigation between them.
+- After successful registration, show a success state and guide the user to log in.
+- After successful login, update the header/navigation immediately to reflect the authenticated state.
+- Reuse the same design language, layout rhythm, and component quality across the rest of the generated app after authentication.
+""".strip()
+
+    product_requirements = """
+Application workflow requirements:
+- Do not hardcode the implementation to a specific dataset or only the current auth story.
+- Treat each story as part of a broader product and generate realistic end-to-end flows that can keep expanding without breaking previous features.
+- When adding a new module, preserve the existing app shell, navigation, visual style, and interaction patterns so the product remains consistent.
+- For entity-centric stories such as task creation, editing, filtering, dashboards, or detail views, generate the required forms, lists, detail states, validation, backend endpoints, and database persistence together.
+- Prefer app-like workflows over disconnected demo widgets.
+""".strip()
+
+    return "\n\n".join([frontend_requirements, backend_requirements, database_requirements, auth_requirements, product_requirements])
+
+
+def _format_project_context(
+    existing_files: dict[str, str] | str | None,
+    *,
+    max_files: int = 24,
+    max_chars_per_file: int = 4000,
+    max_total_chars: int = 32000,
+) -> str:
+    if not existing_files:
+        return "No existing project files yet."
+
+    if isinstance(existing_files, str):
+        trimmed = existing_files.strip()
+        return trimmed[:max_total_chars] if trimmed else "No existing project files yet."
+
+    snippets: list[str] = []
+    total = 0
+    for index, path in enumerate(sorted(existing_files)):
+        if index >= max_files or total >= max_total_chars:
+            break
+
+        content = str(existing_files[path])
+        snippet = content[:max_chars_per_file]
+        if len(content) > max_chars_per_file:
+            snippet += "\n... [truncated]"
+
+        block = f"FILE: {path}\n{snippet}"
+        if total + len(block) > max_total_chars:
+            break
+
+        snippets.append(block)
+        total += len(block)
+
+    return "\n\n".join(snippets) if snippets else "No existing project files yet."
+
+
+def _build_story_prompt(
+    story: dict[str, Any],
+    stack_key: str,
+    stack_prompt: str,
+    existing_code: str = "",
+    project_config: dict[str, Any] | None = None,
+) -> str:
+    title = str(story.get("title") or story.get("summary") or "").strip()
+    details = _story_section(story, "details")
+    description = _story_section(story, "description")
+    acceptance_criteria = _story_section(story, "acceptance_criteria")
+    definition_of_done = _story_section(story, "definition_of_done")
+    ui_reference = _ui_reference_section(story)
+    resolved_config = normalize_project_config(stack_key, project_config)
+    stack_requirements = _build_stack_requirements(resolved_config)
 
     return f"""
 You are a senior software engineer producing production-ready project code.
@@ -46,11 +331,22 @@ You are a senior software engineer producing production-ready project code.
 Generate complete implementation files for this Jira story using:
 {stack_prompt}
 
+Project stack choices:
+- Frontend: {FRONTEND_STACKS[resolved_config["frontend_stack"]]["label"]}
+- Backend: {BACKEND_STACKS[resolved_config["backend_stack"]]["label"]}
+- Database: {DATABASE_OPTIONS[resolved_config["database"]]["label"]}
+
+Story Title:
+{title or "Not provided."}
+
 Story Summary:
 {story.get('summary', '')}
 
+Details:
+{details}
+
 Description:
-{story.get('description', '')}
+{description}
 
 Acceptance Criteria:
 {acceptance_criteria}
@@ -58,12 +354,38 @@ Acceptance Criteria:
 Definition of Done:
 {definition_of_done}
 
+UI Prompt Inbox:
+{ui_reference}
+
+Existing Project Context:
+{existing_code or "No existing project files yet."}
+
 Requirements:
 - Return ONLY valid JSON (no markdown fences, no prose, no comments outside JSON).
-- Include every required file for a runnable implementation of this story.
+- If project context exists, extend it instead of starting over.
+- Return every new or modified file required for a runnable implementation of this story.
 - Use realistic directory paths as keys (examples: app/main.py, src/services/userService.ts, docker-compose.yml).
-- Include config, dependencies, tests, and entrypoint files where applicable.
+- Include config, dependencies, database wiring where applicable, and entrypoint files.
 - Ensure file contents are complete and internally consistent.
+- Preserve compatibility with the existing project structure, naming, and interfaces.
+- Build a fully functional, industry-style implementation with meaningful UX and complete frontend/backend/database connectivity.
+- Do not generate a toy example, placeholder screen, or intentionally minimal skeleton.
+- Treat the story details, description, acceptance criteria, and definition of done as binding implementation inputs for this specific story.
+- Implement every concrete functional requirement explicitly mentioned in those sections, not just the summary.
+- When UI Prompt Inbox notes are present, reflect them in layout structure, styling direction, page hierarchy, and component emphasis.
+- If a reference screenshot filename is provided, treat it as a visual direction signal even though pixel-level analysis is unavailable in this prompt.
+- Translate each story requirement into the necessary UI, API, data model, persistence, validation, state handling, navigation, and error/success flows.
+- Do not hardcode the solution to one sample dataset, one seeded record set, or one narrow auth-only demo path.
+- Include meaningful UI states, validation, success/error handling, and real service integration.
+- Frontend state transitions must be stable and production-safe; avoid effect or callback loops that cause flicker, repeated session checks, navigation thrashing, or loading/register screen oscillation.
+- Prefer straightforward, testable modules and maintainable wiring over fake enterprise boilerplate.
+- Frontend output must feel production-ready, with intentional screen composition and usable navigation.
+- Authentication output must include real register/login/logout flows, connected persistence, and authenticated UI state handling.
+- New modules must inherit the same design system and UX quality as existing modules.
+- Domain data introduced by the story must be stored and loaded from PostgreSQL through the backend, not simulated only in the browser.
+- Generate cohesive, expandable product workflows similar in quality to strong Replit-style app generation: consistent UI, connected functionality, and working end-to-end flows.
+
+{stack_requirements}
 
 Return this exact schema:
 {{
@@ -75,17 +397,114 @@ Return this exact schema:
 """.strip()
 
 
+def _build_test_prompt(
+    story: dict[str, Any],
+    existing_code: str,
+    stack_key: str = "",
+    project_config: dict[str, Any] | None = None,
+) -> str:
+    details = _story_section(story, "details")
+    description = _story_section(story, "description")
+    acceptance_criteria = _story_section(story, "acceptance_criteria")
+    definition_of_done = _story_section(story, "definition_of_done")
+    categories = ", ".join(TEST_CATEGORY_HINTS)
+    resolved_config = normalize_project_config(stack_key, project_config)
+    stack_requirements = _build_stack_requirements(resolved_config)
+
+    return f"""
+You are a senior QA architect and SDET.
+
+Create a language-agnostic test design package for this Jira story.
+
+Story Summary:
+{story.get('summary', '')}
+
+Details:
+{details}
+
+Description:
+{description}
+
+Acceptance Criteria:
+{acceptance_criteria}
+
+Definition of Done:
+{definition_of_done}
+
+Existing Code Context:
+{existing_code}
+
+Requirements:
+- Return ONLY valid JSON.
+- Create practical unit test files that directly test the existing code behavior.
+- Manual and automated test cases must be separate sections.
+- Provide categories across: {categories}.
+- Cover the implemented behavior implied by the story details, description, acceptance criteria, and definition of done.
+- Tests must run against the generated project without requiring undeclared optional packages.
+- For python_fastapi, prefer FastAPI TestClient or direct function tests. Do not assume passlib, jose, bcrypt, or email-validator are installed.
+- When authentication exists, include coverage for register, login, logout, session visibility, and success/error messages.
+- Derive imports, module names, route paths, request payloads, database usage, and expected responses from the Existing Code Context instead of inventing placeholders.
+- When the generated code shows a specific database name, connection pattern, table name, service function, or module path, reuse those exact values in the unit test files and automated test cases.
+- Do not hardcode fallback database names such as `generated_story_app` when the code context or environment already indicates the intended database.
+- For database-backed auth flows, generated tests must be isolated from prior runs: create/clean prerequisite records explicitly or use unique emails per test instead of assuming an empty persistent database.
+- For direct FastAPI service-function tests, align assertions with the implementation style shown in Existing Code Context: if the service raises `HTTPException` on invalid credentials or duplicate registration, assert the exception rather than expecting a returned error dictionary.
+- For router-level auth tests, seed any required user before login/logout requests and avoid reusing a fixed email across unrelated tests unless the test also resets the corresponding auth tables.
+- Automated test cases must be listed individually, and unit test files should contain multiple concrete `test_*` cases when the story behavior warrants it.
+
+{stack_requirements}
+
+Return this exact schema:
+{{
+  "unit_test_files": {{
+    "path/to/test_file.ext": "complete test code"
+  }},
+  "manual_test_cases": [
+    {{
+      "id": "M-001",
+      "title": "Test title",
+      "category": "functional",
+      "preconditions": ["..."],
+      "steps": ["..."],
+      "expected_result": "...",
+      "priority": "High"
+    }}
+  ],
+  "automated_test_cases": [
+    {{
+      "id": "A-001",
+      "title": "Test title",
+      "category": "integration",
+      "type": "api|ui|contract|performance|security",
+      "test_data": ["..."],
+      "assertions": ["..."],
+      "priority": "High"
+    }}
+  ]
+}}
+""".strip()
+
+
 def _invoke_code_model(prompt: str) -> str:
-    response = client.chat.completions.create(
-        model=CODEGEN_MODEL,
-        messages=[
-            {"role": "system", "content": "You output strict JSON only."},
-            {"role": "user", "content": prompt},
-        ],
-        temperature=0.15,
-        response_format={"type": "json_object"},
-    )
-    return (response.choices[0].message.content or "").strip()
+    try:
+        response = client.chat.completions.create(
+            model=CODEGEN_MODEL,
+            messages=[
+                {"role": "system", "content": "You output strict JSON only."},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.15,
+            response_format={"type": "json_object"},
+        )
+        return (response.choices[0].message.content or "").strip()
+    except BadRequestError as exc:
+        body = getattr(exc, "body", None)
+        if isinstance(body, dict):
+            error = body.get("error", {})
+            if error.get("code") == "json_validate_failed":
+                failed_generation = error.get("failed_generation", "")
+                if failed_generation:
+                    return str(failed_generation).strip()
+        raise
 
 
 def _extract_json_candidate(raw_content: str) -> str:
@@ -161,6 +580,66 @@ def _normalize_files(files_obj: Any) -> dict[str, str]:
     return normalized
 
 
+def _normalize_test_cases(items: Any) -> list[dict[str, Any]]:
+    if not isinstance(items, list):
+        return []
+
+    normalized: list[dict[str, Any]] = []
+    for item in items:
+        if isinstance(item, dict):
+            normalized.append(item)
+    return normalized
+
+
+def _is_python_test_file(path: str) -> bool:
+    normalized = str(path).replace("\\", "/").strip("/")
+    if not normalized:
+        return False
+    lowered = normalized.lower()
+    name = lowered.rsplit("/", 1)[-1]
+    return (
+        lowered.startswith("tests/")
+        or "/tests/" in lowered
+        or name.startswith("test_")
+        or name.endswith("_test.py")
+    )
+
+
+def _extract_pytest_counts(output: str) -> dict[str, int]:
+    counts = {
+        "passed": 0,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+    }
+    if not output:
+        return counts
+
+    summary_line = ""
+    for raw_line in reversed(output.splitlines()):
+        line = raw_line.strip()
+        if not line:
+            continue
+        if " in " not in line:
+            continue
+        if not re.search(r"\b(passed|failed|error|errors|skipped|xfailed|xpassed)\b", line, re.IGNORECASE):
+            continue
+        summary_line = line
+        break
+
+    if not summary_line:
+        return counts
+
+    for label in counts:
+        match = re.search(rf"(\d+)\s+{label}", summary_line, re.IGNORECASE)
+        if match:
+            counts[label] = int(match.group(1))
+
+    return counts
+
+
 def _parse_code_response(raw_content: str) -> dict[str, str]:
     try:
         payload = parse_llm_json(raw_content)
@@ -177,18 +656,290 @@ def _parse_code_response(raw_content: str) -> dict[str, str]:
     raise ValueError("Model response must be a JSON object with a `files` key")
 
 
-def generate_code_for_story(story, stack_key):
+def _parse_test_response(raw_content: str) -> dict[str, Any]:
+    try:
+        payload = parse_llm_json(raw_content)
+    except Exception:
+        candidate = _extract_json_candidate(raw_content)
+        repaired = _escape_control_chars_in_json_strings(candidate)
+        payload = json.loads(repaired)
+
+    if not isinstance(payload, dict):
+        raise ValueError("Test generation response must be a JSON object")
+
+    return {
+        "unit_test_files": _normalize_files(payload.get("unit_test_files", {})),
+        "manual_test_cases": _normalize_test_cases(payload.get("manual_test_cases", [])),
+        "automated_test_cases": _normalize_test_cases(payload.get("automated_test_cases", [])),
+    }
+
+
+def _story_text(story: dict[str, Any]) -> str:
+    parts: list[str] = []
+    for key in ("title", "summary", "description", "acceptance_criteria", "definition_of_done", "details"):
+        value = story.get(key)
+        if isinstance(value, list):
+            parts.extend(str(item).strip() for item in value if str(item).strip())
+        elif value is not None:
+            text = str(value).strip()
+            if text:
+                parts.append(text)
+    return " ".join(parts).lower()
+
+
+def _auth_story_scope(story: dict[str, Any]) -> str | None:
+    text = _story_text(story)
+    if not any(keyword in text for keyword in ("auth", "login", "log in", "register", "sign up", "signup", "logout", "session")):
+        return None
+    if any(keyword in text for keyword in ("register", "registration", "sign up", "signup", "sign-up")):
+        return "register"
+    if any(keyword in text for keyword in ("logout", "log out", "sign out", "signout", "sign-out")):
+        return "logout"
+    if "session" in text:
+        return "session"
+    if any(keyword in text for keyword in ("login", "log in", "sign in", "signin", "sign-in")):
+        return "login"
+    return "auth"
+
+
+def _render_auth_service_story_test(scope: str) -> str:
+    if scope == "register":
+        return """import uuid
+
+import pytest
+from fastapi import HTTPException
+
+from services.auth_service import register_user
+
+
+def unique_email() -> str:
+    return f"test-{uuid.uuid4().hex[:12]}@example.com"
+
+
+def test_register_user():
+    data = {"name": "Test User", "email": unique_email(), "password": "password"}
+    response = register_user(data)
+    assert response["message"] == "Account created successfully"
+
+
+def test_register_user_duplicate_email():
+    data = {"name": "Test User", "email": unique_email(), "password": "password"}
+    register_user(data)
+    with pytest.raises(HTTPException) as exc_info:
+        register_user(data)
+    assert exc_info.value.status_code == 409
+
+
+def test_register_user_missing_fields():
+    with pytest.raises(HTTPException) as exc_info:
+        register_user({"email": unique_email()})
+    assert exc_info.value.status_code == 400
+"""
+    if scope == "login":
+        return """import uuid
+
+import pytest
+from fastapi import HTTPException
+
+from services.auth_service import login_user, register_user
+
+
+def unique_email() -> str:
+    return f"test-{uuid.uuid4().hex[:12]}@example.com"
+
+
+def seed_user() -> dict:
+    credentials = {"name": "Test User", "email": unique_email(), "password": "password"}
+    register_user(credentials)
+    return credentials
+
+
+def test_login_user():
+    credentials = seed_user()
+    response = login_user({"email": credentials["email"], "password": credentials["password"]})
+    assert response["message"] == "Logged in successfully"
+
+
+def test_login_user_invalid_credentials():
+    credentials = seed_user()
+    with pytest.raises(HTTPException) as exc_info:
+        login_user({"email": credentials["email"], "password": "wrongpassword"})
+    assert exc_info.value.status_code == 401
+
+
+def test_login_user_missing_fields():
+    with pytest.raises(HTTPException) as exc_info:
+        login_user({"email": unique_email()})
+    assert exc_info.value.status_code == 400
+"""
+    return """def test_auth_placeholder():
+    assert True
+"""
+
+
+def _render_auth_router_story_test(scope: str) -> str:
+    if scope == "register":
+        return """import uuid
+
+from fastapi.testclient import TestClient
+
+from main import app
+
+
+client = TestClient(app)
+
+
+def unique_email() -> str:
+    return f"test-{uuid.uuid4().hex[:12]}@example.com"
+
+
+def test_register():
+    response = client.post("/auth/register", json={"name": "Test User", "email": unique_email(), "password": "password"})
+    assert response.status_code == 200
+
+
+def test_register_duplicate_user():
+    payload = {"name": "Test User", "email": unique_email(), "password": "password"}
+    first = client.post("/auth/register", json=payload)
+    second = client.post("/auth/register", json=payload)
+    assert first.status_code == 200
+    assert second.status_code == 409
+"""
+    if scope == "login":
+        return """import uuid
+
+from fastapi.testclient import TestClient
+
+from main import app
+
+
+client = TestClient(app)
+
+
+def unique_email() -> str:
+    return f"test-{uuid.uuid4().hex[:12]}@example.com"
+
+
+def seed_user() -> dict:
+    payload = {"name": "Test User", "email": unique_email(), "password": "password"}
+    response = client.post("/auth/register", json=payload)
+    assert response.status_code == 200
+    return payload
+
+
+def test_login():
+    credentials = seed_user()
+    response = client.post("/auth/login", json={"email": credentials["email"], "password": credentials["password"]})
+    assert response.status_code == 200
+
+
+def test_login_invalid_credentials():
+    credentials = seed_user()
+    response = client.post("/auth/login", json={"email": credentials["email"], "password": "wrongpassword"})
+    assert response.status_code == 401
+"""
+    return """def test_auth_router_placeholder():
+    assert True
+"""
+
+
+def _is_auth_test_path(path: str) -> bool:
+    lowered = path.replace("\\", "/").lower()
+    name = lowered.rsplit("/", 1)[-1]
+    return "auth" in name and _is_python_test_file(path)
+
+
+def _is_router_test_content(path: str, content: str) -> bool:
+    lowered = path.replace("\\", "/").lower()
+    name = lowered.rsplit("/", 1)[-1]
+    if "service" in name:
+        return False
+    if "router" in name or "_api.py" in name:
+        return True
+    return (
+        "router" in lowered
+        or "testclient" in content.lower()
+        or "client.post('/auth" in content.lower()
+        or 'client.post("/auth' in content.lower()
+    )
+
+
+def _path_scope_hint(path: str) -> str | None:
+    lowered = path.replace("\\", "/").lower()
+    if "register" in lowered or "signup" in lowered or "sign_up" in lowered:
+        return "register"
+    if "login" in lowered or "signin" in lowered or "sign_in" in lowered:
+        return "login"
+    if "logout" in lowered or "signout" in lowered or "sign_out" in lowered:
+        return "logout"
+    if "session" in lowered:
+        return "session"
+    return None
+
+
+def _normalize_auth_test_files_for_story(
+    story: dict[str, Any],
+    unit_test_files: dict[str, str],
+) -> dict[str, str]:
+    scope = _auth_story_scope(story)
+    if not scope:
+        return unit_test_files
+
+    normalized: dict[str, str] = {}
+    for path, content in unit_test_files.items():
+        if not _is_auth_test_path(path):
+            normalized[path] = content
+            continue
+
+        hint = _path_scope_hint(path)
+        if hint and hint != scope:
+            continue
+
+        if _is_router_test_content(path, content):
+            normalized[path] = _render_auth_router_story_test(scope)
+        else:
+            normalized[path] = _render_auth_service_story_test(scope)
+
+    return normalized or unit_test_files
+
+
+def _normalize_generated_tests_for_story(
+    story: dict[str, Any],
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        **payload,
+        "unit_test_files": _normalize_auth_test_files_for_story(story, payload.get("unit_test_files", {})),
+    }
+
+
+def generate_code_for_story(
+    story: dict[str, Any],
+    stack_key: str,
+    existing_code: dict[str, str] | str | None = None,
+    project_config: dict[str, Any] | None = None,
+) -> dict[str, str]:
     """
     Generates production-ready code for ONE story.
     Returns a dict: {filepath: code}
     """
-    if stack_key not in SUPPORTED_STACKS:
+    if stack_key not in SUPPORTED_STACKS and stack_key not in BACKEND_STACKS and stack_key not in FRONTEND_STACKS:
         return {
-            "ERROR.txt": f"Unsupported stack: {stack_key}. Supported: {', '.join(SUPPORTED_STACKS)}",
+            "ERROR.txt": (
+                f"Unsupported stack: {stack_key}. Supported backend stacks: {', '.join(BACKEND_STACKS)}. "
+                f"Supported frontend stacks: {', '.join(FRONTEND_STACKS)}."
+            ),
         }
 
-    stack = SUPPORTED_STACKS[stack_key]["prompt"]
-    prompt = _build_story_prompt(story, stack)
+    resolved_config = normalize_project_config(stack_key, project_config)
+    stack = _project_config_prompt(resolved_config)
+    prompt = _build_story_prompt(
+        story,
+        stack_key,
+        stack,
+        _format_project_context(existing_code),
+        resolved_config,
+    )
 
     raw_content = ""
     parse_error = ""
@@ -212,4 +963,464 @@ def generate_code_for_story(story, stack_key):
             f"Parser error: {parse_error}\n\n"
             f"Raw model output:\n{raw_content}"
         )
+    }
+
+
+def generate_tests_for_story(
+    story: dict[str, Any],
+    existing_code: str = "",
+    stack_key: str = "",
+    project_config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    prompt = _build_test_prompt(story, existing_code, stack_key, project_config)
+
+    raw_content = ""
+    parse_error = ""
+
+    for _ in range(1, MAX_PARSE_RETRIES + 2):
+        raw_content = _invoke_code_model(prompt)
+        try:
+            parsed = _parse_test_response(raw_content)
+            return _normalize_generated_tests_for_story(story, parsed)
+        except Exception as exc:  # noqa: BLE001
+            parse_error = str(exc)
+            prompt = (
+                "Your previous answer was not parseable for the required JSON schema. "
+                "Respond again with JSON ONLY and include keys: unit_test_files, manual_test_cases, automated_test_cases.\n\n"
+                f"Previous output:\n{raw_content}"
+            )
+
+    return {
+        "unit_test_files": {
+            "ERROR.txt": (
+                "Failed to parse model output after retries.\n"
+                f"Parser error: {parse_error}\n\n"
+                f"Raw model output:\n{raw_content}"
+            )
+        },
+        "manual_test_cases": [],
+        "automated_test_cases": [],
+    }
+
+
+def build_project_preview(files: dict[str, str], stack_key: str = "") -> dict[str, Any]:
+    entrypoints = [
+        path
+        for path in sorted(files)
+        if path.endswith(("main.py", "app.py", "server.js", "index.js", "index.html", "main.jsx", "main.tsx"))
+    ]
+    components = [
+        path
+        for path in sorted(files)
+        if "/components/" in path or path.endswith((".jsx", ".tsx", ".vue"))
+    ]
+    routes: list[str] = []
+
+    for path, content in files.items():
+        if path.endswith(".py"):
+            routes.extend(f"{method.upper()} {route}" for _, method, route in ROUTE_PATTERN.findall(content))
+        elif path.endswith((".js", ".ts", ".jsx", ".tsx")):
+            routes.extend(f"{method.upper()} {route}" for _, method, route in EXPRESS_ROUTE_PATTERN.findall(content))
+
+    highlights = [
+        f"{len(files)} project files generated",
+        f"{len(entrypoints)} entrypoints detected",
+        f"{len(routes)} HTTP routes discovered",
+        f"{len(components)} UI component files detected",
+    ]
+
+    summary = (
+        "Project preview is derived from the generated source tree. "
+        "Use it to inspect structure and likely user flows before exporting or running the app."
+    )
+
+    route_items = "".join(f"<li>{route}</li>" for route in routes[:8]) or "<li>No routes detected yet</li>"
+    entrypoint_items = "".join(f"<li>{path}</li>" for path in entrypoints[:8]) or "<li>No entrypoints detected yet</li>"
+    component_items = "".join(f"<li>{path}</li>" for path in components[:8]) or "<li>No UI component files detected yet</li>"
+    file_items = "".join(f"<li>{path}</li>" for path in sorted(files)[:12]) or "<li>No files generated yet</li>"
+    resources = sorted({route.split(" ", 1)[1].strip("/").split("/", 1)[0] for route in routes if " " in route and route.split(" ", 1)[1].strip("/")})
+
+    preview_cards: list[str] = []
+    if resources:
+        for resource in resources[:4]:
+            title = resource.replace("-", " ").replace("_", " ").title()
+            preview_cards.append(
+                f"""
+                <article class="surface">
+                  <h3>{title} Workspace</h3>
+                  <div class="field-grid">
+                    <label><span>Name</span><input placeholder="Sample {title} name" value="Alex Johnson" /></label>
+                    <label><span>Email</span><input placeholder="alex@example.com" value="alex@example.com" /></label>
+                    <label><span>Status</span><select><option>Active</option><option>Pending</option><option>Disabled</option></select></label>
+                    <label><span>Role</span><select><option>Owner</option><option>Editor</option><option>Viewer</option></select></label>
+                  </div>
+                  <div class="action-row">
+                    <button>Save Changes</button>
+                    <button class="ghost">Reset</button>
+                  </div>
+                </article>
+                """.strip()
+            )
+    else:
+        preview_cards.append(
+            """
+            <article class="surface">
+              <h3>Application Canvas</h3>
+              <p>As new stories add routes, entities, or UI components, this preview will render richer screens here automatically.</p>
+            </article>
+            """.strip()
+        )
+
+    route_badges = "".join(f'<span class="route-chip">{route}</span>' for route in routes[:10]) or '<span class="route-chip">No routes yet</span>'
+
+    html = f"""
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Generated App Preview</title>
+    <style>
+      body {{
+        margin: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(59, 130, 246, 0.35), transparent 26%),
+          linear-gradient(160deg, #081120, #111827 42%, #1d4ed8 100%);
+        color: #e5eefc;
+        padding: 24px;
+      }}
+      * {{ box-sizing: border-box; }}
+      .hero {{
+        padding: 20px;
+        border-radius: 18px;
+        background: rgba(15, 23, 42, 0.72);
+        border: 1px solid rgba(191, 219, 254, 0.25);
+        margin-bottom: 18px;
+      }}
+      .hero h1 {{ margin: 0 0 8px; font-size: 28px; }}
+      .hero p {{ margin: 0; color: #bfd4ff; line-height: 1.5; }}
+      .grid {{
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px;
+      }}
+      .card {{
+        background: rgba(15, 23, 42, 0.78);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 16px;
+        padding: 16px;
+        min-height: 180px;
+      }}
+      .simulator {{
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 14px;
+        margin-bottom: 16px;
+      }}
+      .surface {{
+        background: rgba(15, 23, 42, 0.78);
+        border: 1px solid rgba(147, 197, 253, 0.16);
+        border-radius: 18px;
+        padding: 18px;
+      }}
+      .field-grid {{
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin: 14px 0;
+      }}
+      label span {{
+        display: block;
+        font-size: 12px;
+        color: #93c5fd;
+        margin-bottom: 6px;
+      }}
+      input, select {{
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        background: rgba(15, 23, 42, 0.94);
+        color: #e5eefc;
+        padding: 10px 12px;
+      }}
+      .action-row {{
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }}
+      button {{
+        border: none;
+        border-radius: 999px;
+        padding: 10px 14px;
+        background: linear-gradient(135deg, #2563eb, #38bdf8);
+        color: white;
+        font-weight: 700;
+      }}
+      button.ghost {{
+        background: rgba(15, 23, 42, 0.45);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+      }}
+      .route-list {{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }}
+      .route-chip {{
+        border-radius: 999px;
+        padding: 7px 10px;
+        background: rgba(59, 130, 246, 0.18);
+        border: 1px solid rgba(147, 197, 253, 0.2);
+        font-size: 12px;
+      }}
+      h2 {{
+        margin: 0 0 12px;
+        font-size: 14px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #93c5fd;
+      }}
+      h3 {{ margin: 0; font-size: 18px; }}
+      ul {{ margin: 0; padding-left: 18px; }}
+      li {{ margin-bottom: 8px; color: #dbeafe; }}
+      .pills {{ display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }}
+      .pill {{
+        border-radius: 999px;
+        padding: 8px 12px;
+        background: rgba(96, 165, 250, 0.18);
+        border: 1px solid rgba(147, 197, 253, 0.25);
+        font-size: 13px;
+      }}
+    </style>
+  </head>
+  <body>
+    <section class="hero">
+      <h1>Generated Application Preview</h1>
+      <p>{summary}</p>
+      <div class="pills">{"".join(f'<span class="pill">{item}</span>' for item in highlights)}</div>
+    </section>
+    <section class="simulator">
+      {"".join(preview_cards)}
+      <aside class="surface">
+        <h3>API Surface</h3>
+        <p>Interactive mock-up derived from generated resources. It reflects likely user flows after the latest story integration.</p>
+        <div class="route-list">{route_badges}</div>
+      </aside>
+    </section>
+    <section class="grid">
+      <article class="card">
+        <h2>Entrypoints</h2>
+        <ul>{entrypoint_items}</ul>
+      </article>
+      <article class="card">
+        <h2>Routes</h2>
+        <ul>{route_items}</ul>
+      </article>
+      <article class="card">
+        <h2>UI Components</h2>
+        <ul>{component_items}</ul>
+      </article>
+      <article class="card">
+        <h2>Generated Files</h2>
+        <ul>{file_items}</ul>
+      </article>
+    </section>
+    <script>
+      document.querySelectorAll('button').forEach((button) => {{
+        button.addEventListener('click', () => {{
+          if (button.classList.contains('ghost')) return;
+          button.textContent = 'Saved';
+          setTimeout(() => (button.textContent = 'Save Changes'), 1200);
+        }});
+      }});
+    </script>
+  </body>
+</html>
+""".strip()
+
+    return {
+        "title": _project_config_label(normalize_project_config(stack_key)),
+        "summary": summary,
+        "highlights": highlights,
+        "entrypoints": entrypoints,
+        "routes": routes,
+        "components": components,
+        "html": html,
+    }
+
+
+def run_project_unit_tests(
+    files: dict[str, str],
+    stack_key: str,
+    test_paths: list[str] | None = None,
+) -> dict[str, Any]:
+    try:
+        if stack_key != "python_fastapi":
+            return {
+                "ok": False,
+                "supported": False,
+                "message": f"Unit test runner currently supports only python_fastapi, not {stack_key}.",
+                "command": "",
+                "stdout": "",
+                "stderr": "",
+                "returncode": None,
+                "collected_test_files": [],
+                "passed_tests": 0,
+                "failed_tests": 0,
+                "error_tests": 0,
+                "skipped_tests": 0,
+                "total_tests": 0,
+                "pass_percentage": 0.0,
+            }
+
+        normalized_files = _normalize_files(files)
+        collected_tests = sorted(path for path in normalized_files if _is_python_test_file(path) and path.endswith(".py"))
+        if test_paths:
+            selected = {path.replace("\\", "/") for path in test_paths}
+            collected_tests = [path for path in collected_tests if path in selected]
+
+        if not collected_tests:
+            return {
+                "ok": False,
+                "supported": True,
+                "message": "No Python unit test files were found in the generated project.",
+                "command": "",
+                "stdout": "",
+                "stderr": "",
+                "returncode": None,
+                "collected_test_files": [],
+                "passed_tests": 0,
+                "failed_tests": 0,
+                "error_tests": 0,
+                "skipped_tests": 0,
+                "total_tests": 0,
+                "pass_percentage": 0.0,
+            }
+
+        temp_root = Path.cwd() / ".generated_test_runs"
+        temp_root.mkdir(parents=True, exist_ok=True)
+
+        with tempfile.TemporaryDirectory(prefix="story-tests-", dir=temp_root) as temp_dir:
+            root = Path(temp_dir)
+            for relative_path, content in normalized_files.items():
+                file_path = root / relative_path
+                file_path.parent.mkdir(parents=True, exist_ok=True)
+                file_path.write_text(content, encoding="utf-8")
+
+            if any("from passlib.context import CryptContext" in content or "import passlib" in content for content in normalized_files.values()):
+                passlib_dir = root / "passlib"
+                passlib_dir.mkdir(parents=True, exist_ok=True)
+                (passlib_dir / "__init__.py").write_text("", encoding="utf-8")
+                (passlib_dir / "context.py").write_text(
+                    """
+class CryptContext:
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def hash(self, value):
+        return f"stub-hash:{value}"
+
+    def verify(self, plain_value, hashed_value):
+        return hashed_value in {plain_value, f"stub-hash:{plain_value}"}
+""".strip(),
+                    encoding="utf-8",
+                )
+
+            command = [sys.executable, "-m", "pytest", "-q", *collected_tests]
+            env = os.environ.copy()
+            python_paths = [str(root)]
+            backend_dir = root / "backend"
+            if backend_dir.exists():
+                python_paths.append(str(backend_dir))
+            existing_pythonpath = env.get("PYTHONPATH")
+            if existing_pythonpath:
+                python_paths.append(existing_pythonpath)
+            env["PYTHONPATH"] = os.pathsep.join(python_paths)
+
+            result = subprocess.run(
+                command,
+                cwd=root,
+                capture_output=True,
+                text=True,
+                timeout=120,
+                env=env,
+            )
+            counts = _extract_pytest_counts(f"{result.stdout}\n{result.stderr}")
+            total_tests = counts["passed"] + counts["failed"] + counts["errors"] + counts["xfailed"] + counts["xpassed"]
+            pass_percentage = round((counts["passed"] / total_tests) * 100, 2) if total_tests else (100.0 if result.returncode == 0 else 0.0)
+
+            return {
+                "ok": result.returncode == 0,
+                "supported": True,
+                "message": "Unit tests passed." if result.returncode == 0 else "Unit tests failed.",
+                "command": " ".join(command),
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "returncode": result.returncode,
+                "collected_test_files": collected_tests,
+                "passed_tests": counts["passed"],
+                "failed_tests": counts["failed"],
+                "error_tests": counts["errors"],
+                "skipped_tests": counts["skipped"],
+                "total_tests": total_tests,
+                "pass_percentage": pass_percentage,
+            }
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "ok": False,
+            "supported": True,
+            "message": "Unit test run timed out.",
+            "command": " ".join(exc.cmd) if exc.cmd else "",
+            "stdout": exc.stdout or "",
+            "stderr": exc.stderr or "",
+            "returncode": None,
+            "collected_test_files": test_paths or [],
+            "passed_tests": 0,
+            "failed_tests": 0,
+            "error_tests": 0,
+            "skipped_tests": 0,
+            "total_tests": 0,
+            "pass_percentage": 0.0,
+        }
+    except Exception as exc:  # noqa: BLE001
+        return {
+            "ok": False,
+            "supported": True,
+            "message": f"Unit test execution failed: {exc}",
+            "command": "",
+            "stdout": "",
+            "stderr": str(exc),
+            "returncode": None,
+            "collected_test_files": test_paths or [],
+            "passed_tests": 0,
+            "failed_tests": 0,
+            "error_tests": 0,
+            "skipped_tests": 0,
+            "total_tests": 0,
+            "pass_percentage": 0.0,
+        }
+
+
+def generate_story_deliverables(
+    story: dict[str, Any],
+    stack_key: str,
+    existing_files: dict[str, str] | None = None,
+    project_config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    existing_files = existing_files or {}
+    context = _format_project_context(existing_files)
+    files = generate_code_for_story(story, stack_key, context, project_config)
+
+    merged_files = dict(existing_files)
+    merged_files.update(files)
+
+    tests = generate_tests_for_story(story, _format_project_context(merged_files), stack_key, project_config)
+
+    return {
+        "files": files,
+        "unit_test_files": {},
+        "manual_test_cases": tests.get("manual_test_cases", []),
+        "automated_test_cases": tests.get("automated_test_cases", []),
+        "preview": build_project_preview(merged_files, stack_key),
     }

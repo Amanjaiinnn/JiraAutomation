@@ -52,7 +52,33 @@ def _post(path: str, payload: dict[str, Any]) -> dict[str, Any]:
     if path == "/stories/check-duplicates":
         return {"duplicates": services.check_story_duplicates(payload["story"])}
     if path == "/stories/generate-code":
-        return {"files": services.generate_story_code(payload["story"], payload["stack"])}
+        return {
+            "files": services.generate_story_code(
+                payload["story"],
+                payload["stack"],
+                payload.get("project_config", {}),
+            )
+        }
+    if path == "/stories/generate-deliverables":
+        return services.generate_story_delivery_pack(
+            payload["story"],
+            payload["stack"],
+            payload.get("existing_files", {}),
+            payload.get("project_config", {}),
+        )
+    if path == "/stories/generate-tests":
+        return services.generate_story_tests(
+            payload["story"],
+            payload.get("existing_code", ""),
+            payload.get("stack", ""),
+            payload.get("project_config", {}),
+        )
+    if path == "/project/run-tests":
+        return services.run_generated_project_tests(
+            payload.get("files", {}),
+            payload["stack"],
+            payload.get("test_paths", []),
+        )
     if path == "/jira/create-stories":
         return {"keys": services.create_selected_jira_stories(payload["stories"])}
 
@@ -86,9 +112,57 @@ def check_duplicates(story: dict) -> list[dict]:
     return _post("/stories/check-duplicates", {"story": story})["duplicates"]
 
 
-def generate_code(story: dict, stack: str) -> dict[str, str]:
-    return _post("/stories/generate-code", {"story": story, "stack": stack})["files"]
+def generate_code(story: dict, stack: str, project_config: dict[str, Any] | None = None) -> dict[str, str]:
+    return _post(
+        "/stories/generate-code",
+        {"story": story, "stack": stack, "project_config": project_config or {}},
+    )["files"]
+
+
+def generate_story_deliverables(
+    story: dict,
+    stack: str,
+    existing_files: dict[str, str],
+    project_config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    return _post(
+        "/stories/generate-deliverables",
+        {
+            "story": story,
+            "stack": stack,
+            "existing_files": existing_files,
+            "project_config": project_config or {},
+        },
+    )
+
+
+def generate_story_tests(
+    story: dict,
+    existing_code: str = "",
+    stack: str = "",
+    project_config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    return _post(
+        "/stories/generate-tests",
+        {
+            "story": story,
+            "existing_code": existing_code,
+            "stack": stack,
+            "project_config": project_config or {},
+        },
+    )
+
+
+def run_project_tests(files: dict[str, str], stack: str, test_paths: list[str] | None = None) -> dict[str, Any]:
+    return _post(
+        "/project/run-tests",
+        {"files": files, "stack": stack, "test_paths": test_paths or []},
+    )
 
 
 def create_jira_stories(stories: list[dict]) -> list[str]:
     return _post("/jira/create-stories", {"stories": stories})["keys"]
+
+
+def complete_story_in_jira(story: dict[str, Any], issue_key: str = "") -> dict[str, Any]:
+    return _post("/jira/complete-story", {"story": story, "issue_key": issue_key})

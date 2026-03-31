@@ -5,6 +5,15 @@ def _norm(v: str) -> str:
     return " ".join(v.lower().split())
 
 
+def _summary_rank(epic: Dict) -> tuple[int, int]:
+    summary = " ".join(str(epic.get("summary", "")).split()).strip()
+    if not summary:
+        return (0, 10**6)
+    words = len(summary.split())
+    # Prefer concise but still informative summaries.
+    return (1, abs(words - 8))
+
+
 def merge_and_dedupe_epics(epics: List[Dict]) -> List[Dict]:
     merged = {}
     for epic in epics:
@@ -43,7 +52,7 @@ def merge_and_dedupe_epics(epics: List[Dict]) -> List[Dict]:
         if len(epic.get("description", "")) > len(current.get("description", "")):
             current["description"] = epic["description"]
 
-        if len(epic.get("summary", "")) > len(current.get("summary", "")):
+        if _summary_rank(epic) > _summary_rank(current):
             current["summary"] = epic.get("summary", "")
 
     return list(merged.values())

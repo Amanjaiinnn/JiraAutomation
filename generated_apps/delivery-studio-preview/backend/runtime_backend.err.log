@@ -1,0 +1,590 @@
+INFO:     Started server process [9836]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [12848]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [21408]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [20536]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [24444]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [16160]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [14004]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [19632]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [2932]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [10076]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [22804]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [17300]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [24488]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [5144]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [2880]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [16456]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [23868]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [20696]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [16796]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [20736]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [11056]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [18116]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [19660]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [12380]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [19992]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [21056]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [20652]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [21168]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [21196]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [21548]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [21560]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [22112]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [21564]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [9392]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [16212]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [20184]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [6312]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [4040]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [2064]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [6988]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\uvicorn\protocols\http\httptools_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\applications.py", line 1134, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 292, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2485, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 976, in run
+    result = context.run(func, *args)
+  File "C:\Users\Aman\Downloads\GlobalLogicassign\generated_apps\delivery-studio-preview\backend\routers\auth_router.py", line 33, in get_session
+    return auth_service.get_session()
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aman\Downloads\GlobalLogicassign\generated_apps\delivery-studio-preview\backend\services\auth_service.py", line 186, in get_session
+    ensure_tables()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aman\Downloads\GlobalLogicassign\generated_apps\delivery-studio-preview\backend\services\auth_service.py", line 14, in ensure_tables
+    connection = get_connection()
+  File "C:\Users\Aman\Downloads\GlobalLogicassign\generated_apps\delivery-studio-preview\backend\database.py", line 17, in get_connection
+    return psycopg2.connect(get_database_url(), cursor_factory=RealDictCursor)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\psycopg2\__init__.py", line 135, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+psycopg2.OperationalError: connection to server at "localhost" (::1), port 9000 failed: FATAL:  database "generated_story_app" does not exist
+
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\uvicorn\protocols\http\httptools_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\applications.py", line 1134, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 292, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2485, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 976, in run
+    result = context.run(func, *args)
+  File "C:\Users\Aman\Downloads\GlobalLogicassign\generated_apps\delivery-studio-preview\backend\routers\auth_router.py", line 33, in get_session
+    return auth_service.get_session()
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aman\Downloads\GlobalLogicassign\generated_apps\delivery-studio-preview\backend\services\auth_service.py", line 186, in get_session
+    ensure_tables()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aman\Downloads\GlobalLogicassign\generated_apps\delivery-studio-preview\backend\services\auth_service.py", line 14, in ensure_tables
+    connection = get_connection()
+  File "C:\Users\Aman\Downloads\GlobalLogicassign\generated_apps\delivery-studio-preview\backend\database.py", line 17, in get_connection
+    return psycopg2.connect(get_database_url(), cursor_factory=RealDictCursor)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\psycopg2\__init__.py", line 135, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+psycopg2.OperationalError: connection to server at "localhost" (::1), port 9000 failed: FATAL:  database "generated_story_app" does not exist
+
+INFO:     Started server process [20348]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\uvicorn\protocols\http\httptools_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\applications.py", line 1134, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 292, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2485, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 976, in run
+    result = context.run(func, *args)
+  File "C:\Users\Aman\Downloads\GlobalLogicassign\generated_apps\delivery-studio-preview\backend\routers\auth_router.py", line 33, in get_session
+    return auth_service.get_session()
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aman\Downloads\GlobalLogicassign\generated_apps\delivery-studio-preview\backend\services\auth_service.py", line 186, in get_session
+    ensure_tables()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aman\Downloads\GlobalLogicassign\generated_apps\delivery-studio-preview\backend\services\auth_service.py", line 14, in ensure_tables
+    connection = get_connection()
+  File "C:\Users\Aman\Downloads\GlobalLogicassign\generated_apps\delivery-studio-preview\backend\database.py", line 17, in get_connection
+    return psycopg2.connect(get_database_url(), cursor_factory=RealDictCursor)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\psycopg2\__init__.py", line 135, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+psycopg2.OperationalError: connection to server at "localhost" (::1), port 9000 failed: FATAL:  database "generated_story_app" does not exist
+
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\uvicorn\protocols\http\httptools_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\applications.py", line 1134, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 292, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\starlette\concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 2485, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py", line 976, in run
+    result = context.run(func, *args)
+  File "C:\Users\Aman\Downloads\GlobalLogicassign\generated_apps\delivery-studio-preview\backend\routers\auth_router.py", line 33, in get_session
+    return auth_service.get_session()
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Aman\Downloads\GlobalLogicassign\generated_apps\delivery-studio-preview\backend\services\auth_service.py", line 186, in get_session
+    ensure_tables()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\Aman\Downloads\GlobalLogicassign\generated_apps\delivery-studio-preview\backend\services\auth_service.py", line 14, in ensure_tables
+    connection = get_connection()
+  File "C:\Users\Aman\Downloads\GlobalLogicassign\generated_apps\delivery-studio-preview\backend\database.py", line 17, in get_connection
+    return psycopg2.connect(get_database_url(), cursor_factory=RealDictCursor)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Aman\AppData\Roaming\Python\Python313\site-packages\psycopg2\__init__.py", line 135, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+psycopg2.OperationalError: connection to server at "localhost" (::1), port 9000 failed: FATAL:  database "generated_story_app" does not exist
+
+INFO:     Started server process [8140]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [26184]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [29668]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [34020]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [13816]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [31956]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [24696]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [28616]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [6228]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+Exception in callback _ProactorBasePipeTransport._call_connection_lost()
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost()>
+Traceback (most recent call last):
+  File "C:\Program Files\Python313\Lib\asyncio\events.py", line 89, in _run
+    self._context.run(self._callback, *self._args)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+INFO:     Started server process [17912]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [24948]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [22036]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [16592]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [10704]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [13244]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [2668]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [2524]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started server process [22072]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)

@@ -1,0 +1,103 @@
+{
+  "modules": {
+    "auth": [
+      {
+        "story_key": "login",
+        "story_title": "As a user, I want to register with a valid email and password to access the system.",
+        "module": "auth",
+        "route_name": "login",
+        "fields": [
+          "email",
+          "password"
+        ],
+        "logic_steps": [
+          "The system validates the email and password.",
+          "The system checks for existing users.",
+          "The system creates a new user account.",
+          "The system notifies the administrator of new user registration.",
+          "The user receives a confirmation email with a link to activate the account.",
+          "The user can log in after activating the account."
+        ],
+        "outputs": [
+          "result"
+        ],
+        "ui_guidance": "there should be an industry level register window with input fields like email, full name and passwprd"
+      },
+      {
+        "story_key": "login_2",
+        "story_title": "As a user, I want to log in with a valid email and password to access the system.",
+        "module": "auth",
+        "route_name": "login-2",
+        "fields": [
+          "email",
+          "password"
+        ],
+        "logic_steps": [
+          "The system validates the email and password.",
+          "The system checks for existing users.",
+          "The system authenticates the user.",
+          "The user is redirected to the dashboard after successful login.",
+          "The user navigates to the login page, enters a valid email and password, and submits the form. The system validates the email and password, checks for existing users, and authenticates the user. The user is redirected to the dashboard after successful login. The system ensures the security and integrity of user data.",
+          "The user navigates to the login page, enters a valid email and password, and submits the form. The system validates the email and password, checks for existing users, and authenticates the user. The user is redirected to the dashboard after successful login. The system ensures the security and integrity of user data.",
+          "The user can log in with a valid email and password.",
+          "The system validates the email and password.",
+          "The system checks for existing users."
+        ],
+        "outputs": [
+          "result"
+        ]
+      },
+      {
+        "story_key": "login_3",
+        "story_title": "As a user, I want to log out of the system to ensure security.",
+        "module": "auth",
+        "route_name": "login-3",
+        "fields": [
+          "email",
+          "password"
+        ],
+        "logic_steps": [
+          "The system invalidates the user session.",
+          "The system clears the user data.",
+          "The user is redirected to the login page.",
+          "The user navigates to the logout page and submits the form. The system invalidates the user session, clears the user data, and redirects the user to the login page. The system ensures the security and integrity of user data.",
+          "The user navigates to the logout page and submits the form. The system invalidates the user session, clears the user data, and redirects the user to the login page. The system ensures the security and integrity of user data.",
+          "The user can log out of the system.",
+          "The system invalidates the user session."
+        ],
+        "outputs": [
+          "error_message",
+          "result"
+        ]
+      }
+    ],
+    "tasks": [
+      {
+        "story_key": "user_create",
+        "story_title": "As a user, I want to create a task with title, description, due date, and priority so that I can manage my tasks efficiently.",
+        "module": "tasks",
+        "route_name": "create-task-title",
+        "fields": [
+          "title",
+          "description",
+          "due_date",
+          "priority"
+        ],
+        "logic_steps": [
+          "Task creation is successful with valid input data.",
+          "Task creation fails with invalid input data.",
+          "Task creation is not possible without user authentication.",
+          "The user logs in to the system and navigates to the task creation page. They enter the task title, description, due date, and priority. The system validates the input data for integrity and consistency. If the data is valid, the system creates a new task and displays it in the task list. The user can then view, update, or delete the task as needed.",
+          "The user logs in to the system and navigates to the task creation page. They enter the task title, description, due date, and priority. The system validates the input data for integrity and consistency. If the data is valid, the system creates a new task and displays it in the task list. The user can then view, update, or delete the task as needed.",
+          "Task creation feature is fully functional.",
+          "Task creation is validated for integrity and consistency.",
+          "Task creation is integrated with user authentication."
+        ],
+        "outputs": [
+          "error_message",
+          "result"
+        ]
+      }
+    ]
+  }
+}

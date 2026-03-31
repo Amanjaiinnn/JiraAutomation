@@ -15,7 +15,7 @@ def _cache_key(epic_name: str, chunk_id: str, chunk_text: str) -> str:
 
 @lru_cache(maxsize=1024)
 def _cached_story_gen(cache_key: str, prompt: str) -> tuple:
-    raw = _chat_with_backoff(prompt, model="llama-3.1-8b-instant", max_tokens=700)
+    raw = _chat_with_backoff(prompt, model="llama-3.1-8b-instant", max_tokens=1000)
     payload = parse_llm_json(raw)
     if isinstance(payload, dict) and "stories" in payload:
         payload = payload["stories"]
@@ -38,11 +38,18 @@ def generate_stories_from_chunk(epic: Dict[str, str], chunk: Dict[str, str]) -> 
 def regenerate_story(story: Dict[str, str], chunk_text: str) -> Dict:
     prompt = f"""
 Refine this user story; keep intent unchanged.
+Expand the description so it is more useful for delivery teams.
+The description must be 4-6 sentences and clearly explain:
+- who the user or actor is
+- what outcome they need
+- the main workflow or interaction
+- important business rules, validations, dependencies, or edge cases
+- the expected business value or result
 Return JSON only with keys summary, description, acceptance_criteria, definition_of_done.
 Story: {json.dumps(story)}
 Context:\n{chunk_text}
 """
-    raw = _chat_with_backoff(prompt, model="llama-3.1-8b-instant", max_tokens=420)
+    raw = _chat_with_backoff(prompt, model="llama-3.1-8b-instant", max_tokens=650)
     payload = parse_llm_json(raw)
     if not isinstance(payload, dict):
         raise ValueError("Story regeneration should return JSON object")

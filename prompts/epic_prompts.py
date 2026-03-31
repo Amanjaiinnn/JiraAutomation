@@ -13,6 +13,7 @@ STRICT RULES:
 - Group logically related requirements.
 - Avoid overlapping scope between epics.
 - Be deterministic and structured.
+- Preserve the order of the requirements as they appear in the chunk.
 - Output VALID JSON ONLY (no markdown, no commentary).
 
 CRITICAL JSON RULES:
@@ -27,7 +28,7 @@ CRITICAL JSON RULES:
 
 Each Epic MUST include:
 - Clear outcome-driven epic name
-- Executive-level summary (2-3 sentences)
+- Crisp executive summary under 180 characters, meaningful on its own, with no ellipsis
 - Detailed business objective (bullet-style within description text)
 - Clearly defined scope (in-scope and out-of-scope)
 - 5-8 testable acceptance criteria
@@ -40,7 +41,7 @@ JSON Schema:
   "epics": [
     {{
       "epic_name": "string",
-      "summary": "2-3 sentence executive summary",
+      "summary": "single-line executive summary under 180 characters",
       "description": "Detailed business description including business objective, actors, process scope, constraints, dependencies, risks, and expected outcomes.",
       "business_objectives": [
         "bullet 1",
@@ -68,6 +69,7 @@ JSON Schema:
 
 QUALITY STANDARD:
 - Description must be 6-10 sentences.
+- Summary must be short, specific, and Jira-ready.
 - Acceptance criteria must be measurable.
 - Scope must be realistic.
 - No duplication between epics.
